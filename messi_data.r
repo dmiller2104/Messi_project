@@ -101,3 +101,109 @@ la_liga_17_18 <- allclean(la_liga_17_18)
 la_liga_18_19 <- FreeMatches(la_liga_18_19)
 la_liga_18_19 <- StatsBombFreeEvents(MatchesDF = la_liga_18_19, Parallel = T)
 la_liga_18_19 <- allclean(la_liga_18_19)
+
+## barcelona specific data
+
+barca_06_07 <- la_liga_06_07 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_06_07$season <- "06/07"
+
+barca_07_08 <- la_liga_07_08 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_07_08$season <- "07/08"
+
+barca_08_09 <- la_liga_08_09 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_08_09$season <- "08/09"
+
+barca_09_10 <- la_liga_09_10 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_09_10$season <- "09/10"
+
+barca_10_11 <- la_liga_10_11 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_10_11$season <- "10/11"
+
+barca_11_12 <- la_liga_11_12 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_11_12$season <- "11/12"
+
+barca_12_13 <- la_liga_12_13 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_12_13$season <- "12/13"
+
+barca_13_14 <- la_liga_13_14 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_13_14$season <- "13/14"
+
+barca_14_15 <- la_liga_14_15 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_14_15$season <- "14/15"
+
+barca_15_16 <- la_liga_15_16 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_15_16$season <- "15/16"
+
+barca_16_17 <- la_liga_16_17 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_16_17$season <- "16/17"
+
+barca_17_18 <- la_liga_17_18 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_17_18$season <- "17/18"
+
+barca_18_19 <- la_liga_18_19 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)))
+barca_18_19$season <- "18/19"
