@@ -6,6 +6,8 @@ library(tidyverse)
 library(StatsBombR)
 library(FC.rSTATS)
 library(SBpitch)
+library(formattable)
+library(RColorBrewer)
 
 ## la liga datasets
 
@@ -255,5 +257,22 @@ all_seasons <- rbind(barca_06_07, barca_07_08, barca_08_09, barca_09_10, barca_1
 
 all_seasons <- drop_na(all_seasons)
 
-#
+# messi summary data only
 
+messi_seasons <- all_seasons %>% filter(player.id == 5503)
+
+messi_seasons <- messi_seasons[,c(2,9,3,4,8,5,6,7)]
+messi_seasons$player.name = "Lionel Messi"
+messi_seasons$XG <- round(messi_seasons$XG,2)
+
+formattable(messi_seasons[,-1],list(`percent_of_team_goals` = percent))
+
+## scatter plot
+
+myPalette <- colorRampPalette(rev(brewer.pal(9, "Purples")))
+sc <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 50))
+
+ggplot(messi_seasons, aes(x = goals, y = XG)) + 
+  geom_point(aes(col = goals, size = percent_of_team_goals)) + 
+  sc + 
+  theme_bw()
