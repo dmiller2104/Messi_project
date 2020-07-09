@@ -56,54 +56,106 @@ la_liga_18_19 <- FreeCompetitions() %>%
 la_liga_06_07 <- FreeMatches(la_liga_06_07)
 la_liga_06_07 <- StatsBombFreeEvents(MatchesDF = la_liga_06_07, Parallel = T)
 la_liga_06_07 <- allclean(la_liga_06_07)
+minutes_06_07 <- get.minutesplayed(la_liga_06_07)
+minutes_06_07 <- minutes_06_07 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_07_08 <- FreeMatches(la_liga_07_08)
 la_liga_07_08 <- StatsBombFreeEvents(MatchesDF = la_liga_07_08, Parallel = T)
 la_liga_07_08 <- allclean(la_liga_07_08)
+minutes_07_08 <- get.minutesplayed(la_liga_07_08)
+minutes_07_08 <- minutes_07_08 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_08_09 <- FreeMatches(la_liga_08_09)
 la_liga_08_09 <- StatsBombFreeEvents(MatchesDF = la_liga_08_09, Parallel = T)
 la_liga_08_09 <- allclean(la_liga_08_09)
+minutes_08_09 <- get.minutesplayed(la_liga_08_09)
+minutes_08_09 <- minutes_08_09 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_09_10 <- FreeMatches(la_liga_09_10)
 la_liga_09_10 <- StatsBombFreeEvents(MatchesDF = la_liga_09_10, Parallel = T)
 la_liga_09_10 <- allclean(la_liga_09_10)
+minutes_09_10 <- get.minutesplayed(la_liga_09_10)
+minutes_09_10 <- minutes_09_10 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_10_11 <- FreeMatches(la_liga_10_11)
 la_liga_10_11 <- StatsBombFreeEvents(MatchesDF = la_liga_10_11, Parallel = T)
 la_liga_10_11 <- allclean(la_liga_10_11)
+minutes_10_11 <- get.minutesplayed(la_liga_10_11)
+minutes_10_11 <- minutes_10_11 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_11_12 <- FreeMatches(la_liga_11_12)
 la_liga_11_12 <- StatsBombFreeEvents(MatchesDF = la_liga_11_12, Parallel = T)
 la_liga_11_12 <- allclean(la_liga_11_12)
+minutes_11_12 <- get.minutesplayed(la_liga_11_12)
+minutes_11_12 <- minutes_11_12 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_12_13 <- FreeMatches(la_liga_12_13)
 la_liga_12_13 <- StatsBombFreeEvents(MatchesDF = la_liga_12_13, Parallel = T)
 la_liga_12_13 <- allclean(la_liga_12_13)
+minutes_12_13 <- get.minutesplayed(la_liga_12_13)
+minutes_12_13 <- minutes_12_13 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_13_14 <- FreeMatches(la_liga_13_14)
 la_liga_13_14 <- StatsBombFreeEvents(MatchesDF = la_liga_13_14, Parallel = T)
 la_liga_13_14 <- allclean(la_liga_13_14)
+minutes_13_14 <- get.minutesplayed(la_liga_13_14)
+minutes_13_14 <- minutes_13_14 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_14_15 <- FreeMatches(la_liga_14_15)
 la_liga_14_15 <- StatsBombFreeEvents(MatchesDF = la_liga_14_15, Parallel = T)
 la_liga_14_15 <- allclean(la_liga_14_15)
+minutes_14_15 <- get.minutesplayed(la_liga_14_15)
+minutes_14_15 <- minutes_14_15 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_15_16 <- FreeMatches(la_liga_15_16)
 la_liga_15_16 <- StatsBombFreeEvents(MatchesDF = la_liga_15_16, Parallel = T)
 la_liga_15_16 <- allclean(la_liga_15_16)
+minutes_15_16 <- get.minutesplayed(la_liga_15_16)
+minutes_15_16 <- minutes_15_16 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_16_17 <- FreeMatches(la_liga_16_17)
 la_liga_16_17 <- StatsBombFreeEvents(MatchesDF = la_liga_16_17, Parallel = T)
 la_liga_16_17 <- allclean(la_liga_16_17)
+minutes_16_17 <- get.minutesplayed(la_liga_16_17)
+minutes_16_17 <- minutes_16_17 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_17_18 <- FreeMatches(la_liga_17_18)
 la_liga_17_18 <- StatsBombFreeEvents(MatchesDF = la_liga_17_18, Parallel = T)
 la_liga_17_18 <- allclean(la_liga_17_18)
+minutes_17_18 <- get.minutesplayed(la_liga_17_18)
+minutes_17_18 <- minutes_17_18 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 la_liga_18_19 <- FreeMatches(la_liga_18_19)
 la_liga_18_19 <- StatsBombFreeEvents(MatchesDF = la_liga_18_19, Parallel = T)
 la_liga_18_19 <- allclean(la_liga_18_19)
+minutes_18_19 <- get.minutesplayed(la_liga_18_19)
+minutes_18_19 <- minutes_18_19 %>% 
+  group_by(player.id) %>% 
+  summarise(minutes = sum(MinutesPlayed))
 
 ## barcelona specific data
 
