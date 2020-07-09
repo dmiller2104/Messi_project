@@ -8,6 +8,7 @@ library(FC.rSTATS)
 library(SBpitch)
 library(formattable)
 library(RColorBrewer)
+library(ggrepel)
 
 ## la liga datasets
 
@@ -265,14 +266,21 @@ messi_seasons <- messi_seasons[,c(2,9,3,4,8,5,6,7)]
 messi_seasons$player.name = "Lionel Messi"
 messi_seasons$XG <- round(messi_seasons$XG,2)
 
-formattable(messi_seasons[,-1],list(`percent_of_team_goals` = percent))
+formattable(messi_seasons[,-1],
+            list(`percent_of_team_goals` = percent,
+                 `goals` = color_bar("#FA614B66"),
+                 `assists` = color_bar("#FA614B66")))
 
 ## scatter plot
 
-myPalette <- colorRampPalette(rev(brewer.pal(9, "Purples")))
-sc <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 50))
-
-ggplot(messi_seasons, aes(x = goals, y = XG)) + 
+messi_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) + 
   geom_point(aes(col = goals, size = percent_of_team_goals)) + 
-  sc + 
-  theme_bw()
+  geom_text_repel(aes(label = season), size = 3.5) + 
+  scale_colour_gradient(low = "blue", high = "red") + 
+  labs(title = "Messi: A supernatural finisher and a club dependent", 
+       subtitle = "In median terms, Messi has his outscored expected goals total per season by 32%,\nand has also accounted for 37% of his team's goals.",
+       caption = "Data source: StatsBomb") +
+       xlab("Goals") +
+       ylab("Expected goals") +
+  theme_classic()
+
