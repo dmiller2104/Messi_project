@@ -9,6 +9,10 @@ library(SBpitch)
 library(formattable)
 library(RColorBrewer)
 library(ggrepel)
+library(extrafont)
+font_import()
+loadfonts(device = "win")
+# fonts() to check fonts available
 
 ## la liga datasets
 
@@ -340,12 +344,10 @@ all_seasons <- drop_na(all_seasons)
 # messi summary data only
 
 messi_seasons <- all_seasons %>% filter(player.id == 5503)
-
-messi_seasons <- messi_seasons[,c(2,9,3,4,8,5,6,7)]
-messi_seasons$player.name = "Lionel Messi"
+messi_seasons <- messi_seasons %>% mutate(goals_per_90 = goals/nineties)
 messi_seasons$XG <- round(messi_seasons$XG,2)
 
-formattable(messi_seasons[,-1],
+formattable(messi_seasons[,c(9,3,4,8,5,6,7)],
             list(`percent_of_team_goals` = percent,
                  `goals` = color_bar("#FA614B66"),
                  `assists` = color_bar("#FA614B66")))
@@ -361,5 +363,23 @@ messi_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) +
        caption = "Data source: StatsBomb") +
        xlab("Goals") +
        ylab("Expected goals") +
-  theme_classic()
+  theme(text=element_text(size = 12, family = "Calibri"),
+        panel.background = element_blank(),
+        axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5)) 
 
+##
+
+ggplot(messi_seasons, aes(x = season, y = goals_per_90, fill = season)) + 
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  scale_fill_manual(values = rep(c("#DC143C","#0000CD"), ceiling(length(messi_seasons$season)/2))[1:length(messi_seasons$season)]) +
+  scale_x_discrete(limits = rev(messi_seasons$season)) +
+  ylab("Goals per 90 minutes") +
+  xlab("Season") +
+  scale_y_continuous(expand = c(0,0)) +
+  coord_flip() +
+  labs(title = "Messi has been averaging nearly a goal a game, and in some cases more\n(Seasons 09/10, 11/12, 14/15, 16/17, 18/19).",
+       caption = "Data source: StatsBomb") +
+  theme(text=element_text(size = 10, family = "Calibri"),
+        panel.background = element_blank())
+ 
