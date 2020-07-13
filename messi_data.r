@@ -682,11 +682,17 @@ create_Pitch(background_colour = "#224C56", grass_colour = "#224C56", goal_colou
   coord_fixed(ratio = 85/100) ## prevents it from looking stretched
 
 
-create_Pitch(background_colour = "#224C56", grass_colour = "#224C56", goal_colour = "#15393D", line_colour = "#B3CED9") +
-  geom_point(data = goal_opposition_data, aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 2) +
+create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "black", goaltype = "box", BasicFeatures = TRUE) +
+  geom_segment(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y,
+                    xend = shot.end_location.x, yend = shot.end_location.y, colour = shot.statsbomb_xg), size = 1) +
+  scale_colour_gradient(low = "blue", high = "red") +
+  geom_point(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 3) +
   scale_fill_manual(values = c("white","light blue","green","red")) +
-  geom_segment(data = goal_opposition_data, aes(x = location.x, y = location.y,
-                    xend = shot.end_location.x, yend = shot.end_location.y)) +
   scale_y_reverse() + # reverses the y axis. otherwise data would be on the wrong side of the pitch
-  theme(legend.position = "None") +
+  theme(legend.position = "none",
+        plot.margin = unit(c(0,0,0,4),"cm")) +
+  coord_cartesian(xlim = c(80,140))
   coord_fixed(ratio = 85/100) ## prevents it from looking stretched
+  
+## stick legend on bottom with source and title and stuff on top
+
