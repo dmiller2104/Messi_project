@@ -654,16 +654,16 @@ goal_tally <- rename(goal_tally, Goals = n)
 
 ## bubble plot of favourite opposition
 
-ggplot(goal_tally, aes(x = OpposingTeam, y = Goals, size = Goals, color = Goals)) + 
+goals_against_teams <- ggplot(goal_tally, aes(x = OpposingTeam, y = Goals, size = Goals, color = Goals)) + 
   geom_point(alpha = 0.85) +
-  scale_size(range = c(.1,18), guide = "none") +
+  scale_size(range = c(.1,16), guide = "none") +
   scale_colour_gradient(low = "blue", high = "red") +
   xlab("Teams in alphabetical order") +
   ylab("Goals") +
-  labs(title = "Stop it, he's already dead!",
-       subtitle = "Messi isn't much of a fan of Sevilla, and arguably Deportivo even more given how few seasons\nthey spent in La liga",
+  labs(title = "A man for all occassions",
+       subtitle = "Messi's goals against teams doesn't fluctutae too much depending on quality. In particular, Messi's record\nagainst Sevilla is quite remarkable scoring, on average, just under two and a half goals a season against\nthem over 13 seaons",
        caption = "Data source: StatsBomb") +
-  geom_text_repel(aes(label = ifelse(Goals > 14 ,paste(OpposingTeam,"(",Goals,")"),'')), size = 4, family = 'Segoe UI Light', colour = 'Black') +
+  geom_text_repel(aes(label = ifelse(Goals > 14 ,paste(OpposingTeam,"(",Goals,")"),'')), size = 4, family = 'Segoe UI Light', colour = 'Black', vjust = 1, hjust = 0) +
   theme(text=element_text(size = 12, family = "Segoe UI Light"),
        panel.background = element_blank(),
        axis.text.x = element_blank(),
@@ -671,4 +671,22 @@ ggplot(goal_tally, aes(x = OpposingTeam, y = Goals, size = Goals, color = Goals)
        axis.line.x = element_line(color = "black", size = 0.5),
        axis.line.y = element_line(color = "black", size = 0.5))
 
-                   
+## goal map
+
+create_Pitch(background_colour = "#224C56", grass_colour = "#224C56", goal_colour = "#15393D", line_colour = "#B3CED9") +
+  geom_segment(data = goal_opposition_data, aes(x = location.x, y = location.y,
+                                  xend = shot.end_location.x, yend = shot.end_location.y),
+               lineend = "round", size = 0.6, arrow = arrow(length = unit(0.08, "inches"))) +
+  scale_y_reverse() + # reverses the y axis. otherwise data would be on the wrong side of the pitch
+  theme(legend.position = "None") + 
+  coord_fixed(ratio = 85/100) ## prevents it from looking stretched
+
+
+create_Pitch(background_colour = "#224C56", grass_colour = "#224C56", goal_colour = "#15393D", line_colour = "#B3CED9") +
+  geom_point(data = goal_opposition_data, aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 2) +
+  scale_fill_manual(values = c("white","light blue","green","red")) +
+  geom_segment(data = goal_opposition_data, aes(x = location.x, y = location.y,
+                    xend = shot.end_location.x, yend = shot.end_location.y)) +
+  scale_y_reverse() + # reverses the y axis. otherwise data would be on the wrong side of the pitch
+  theme(legend.position = "None") +
+  coord_fixed(ratio = 85/100) ## prevents it from looking stretched
