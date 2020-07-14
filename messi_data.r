@@ -8,11 +8,17 @@ library(FC.rSTATS)
 library(SBpitch)
 library(formattable)
 library(RColorBrewer)
+library(png)
 library(ggrepel)
 library(extrafont)
 font_import()
 loadfonts(device = "win")
 # fonts() to check fonts available
+
+## get logo ##
+img <- grid::rasterGrob(png::readPNG("statsbomb_logo.png"), interpolate = TRUE)
+
+ggplot() + annotation_custom(img, xmin = 0.5, xmax = 0.9, ymin = -0.5, ymax = 1)
 
 ## la liga datasets
 
@@ -686,13 +692,50 @@ create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = 
   geom_segment(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y,
                     xend = shot.end_location.x, yend = shot.end_location.y, colour = shot.statsbomb_xg), size = 1) +
   scale_colour_gradient(low = "blue", high = "red") +
+  guides(fill = guide_legend(title = "Body"))
   geom_point(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 3) +
   scale_fill_manual(values = c("white","light blue","green","red")) +
   scale_y_reverse() + # reverses the y axis. otherwise data would be on the wrong side of the pitch
-  theme(legend.position = "none",
+  theme(legend.position = "left",
         plot.margin = unit(c(0,0,0,4),"cm")) +
   coord_cartesian(xlim = c(80,140))
   coord_fixed(ratio = 85/100) ## prevents it from looking stretched
   
 ## stick legend on bottom with source and title and stuff on top
 
+  
+create_Pitch() + 
+  coord_flip()
+
+create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "dark blue", goaltype = "box", BasicFeatures = FALSE) +
+  geom_segment(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y,
+                      xend = shot.end_location.x, yend = shot.end_location.y, colour = shot.statsbomb_xg), size = 1.2) +
+  scale_colour_gradient(low = "#0066Cc", high = "#FF0033") +
+  geom_point(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 3.5) +
+  scale_fill_manual(values = c("white","#0000CD","green","#DC143C")) +
+  labs(fill = "Body part", colour ="Statsbomb XG") +
+  coord_flip(xlim = c(75,125),ylim = c(-5,85))+
+  scale_y_reverse() +
+  guides(fill = guide_legend(order=2),
+         colour = guide_colourbar(order=1))+
+  labs(title = "Messi does not care for XG",
+       subtitle = "Messi's 18/19 season goal map",
+       caption = "Data source") +
+  annotation_custom(img, xmin = 75, xmax = 90, ymin = -50, ymax = -79) +
+  theme(text=element_text(size = 12, family = "Segoe UI Light"),
+        plot.title = element_text(hjust = 0.05, vjust = -4, size = 20, face = "bold", colour = "#333399"),
+        plot.subtitle = element_text(hjust = 0.04, vjust = -8, face = "bold", colour = "#990000"),
+        plot.caption = element_text(hjust = 0.69, vjust = 32, size = 12),
+        legend.direction = "horizontal",
+        legend.position = c(0.35,0.15))
+
+create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "dark blue", goaltype = "box", BasicFeatures = FALSE) +
+  coord_flip(xlim = c(75,125),ylim = c(-5,85)) +
+  scale_y_reverse() +
+  annotation_custom(img, xmin = 75, xmax = 100, ymin = -40, ymax = -78) 
+  
+  
+  
+  
+  
+ 
