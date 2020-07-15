@@ -579,17 +579,25 @@ formattable(messi_seasons[,c(15,3,4,8,5,6,7)],
 
 goal_xg_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) + 
   geom_point(aes(col = goals, size = percent_of_team_goals)) + 
+  scale_size(range = c(.1,12)) +
   geom_text_repel(aes(label = season), size = 3.5) + 
   scale_colour_gradient(low = "blue", high = "red") + 
   labs(title = "Messi: A supernatural finisher and a club dependent", 
-       subtitle = "In median terms, Messi has his outscored expected goals total per season by 32%,\nand has also accounted for 37% of his team's goals",
-       caption = "Data source: StatsBomb") +
+       subtitle = "In median terms, Messi has his outscored expected goals total per season by 32%, and has also\naccounted for 37% of his team's goals",
+       caption = "Data source",
+       size = "% of team goals",
+       colour = "Goals") +
        xlab("Goals") +
-       ylab("Expected goals") +
+       ylab("Expected goals")+
+  coord_cartesian(ylim = c(0,50), clip = "off") +
+  annotation_custom(img, xmin = 40, xmax = 52, ymin = -10, ymax = -36) +
   theme(text=element_text(size = 12, family = "Segoe UI Light"),
+        plot.caption = element_text(hjust = .82, vjust = 8.5),
         panel.background = element_blank(),
         axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5)) 
+        axis.line.y = element_line(color = "black", size = 0.5),
+        legend.direction = "horizontal",
+        legend.position = "bottom") 
 
 ## barplot showing goals per 90 over seasons
 
@@ -599,12 +607,13 @@ goals_per_90_plot <- ggplot(messi_seasons, aes(x = season, y = goals_per_90, fil
   scale_x_discrete(limits = rev(messi_seasons$season)) +
   ylab("Goals per 90 minutes") +
   xlab("Season") +
+  coord_cartesian(ylim = c(0,50), clip = "off") +
   scale_y_continuous(expand = c(0,0)) +
   coord_flip() +
   labs(title = "Back of the net, time and again",
       subtitle = "Messi has been averaging nearly a goal a game, and in some cases more (Seasons 09/10, 11/12, 14/15, 16/17, 18/19)",
        caption = "Data source: StatsBomb") +
-  theme(text=element_text(size = 11, family = "Segoe UI Light"),
+  theme(text=element_text(size = 10.5, family = "Segoe UI Light"),
         panel.background = element_blank())
 
 ## stacked barchart goals by type 
@@ -622,10 +631,14 @@ goal_by_type <- ggplot(a[order(a$value, decreasing = T),],
                       labels = c("Left foot", "Right foot", "Header","Other","Free Kick", "Penalty")) +
   ylab("Goals") +
   xlab("Season") +
+  coord_cartesian(ylim = c(0,50), clip = "off") +
+  annotation_custom(img, xmin = 8.5, xmax = 13.5, ymin = 0, ymax = -18) +
   labs(title = "Dont let him get on his left foot!",
        subtitle = "It comes as no surprise that most of Messi's goals come from his left foot, but we can also see an increasing\nnumber of free kicks making up his seasons tallies",
-       caption = "Data source: StatsBomb") +
+       caption = "Data source") +
   theme(text=element_text(size = 11, family = "Segoe UI Light"),
+        plot.title = element_text(face = "bold"),
+        plot.caption = element_text(vjust = 8.25, hjust = 0.71),
         panel.background = element_blank())
 
 ## dot plot alternative
@@ -666,46 +679,25 @@ goals_against_teams <- ggplot(goal_tally, aes(x = OpposingTeam, y = Goals, size 
   scale_colour_gradient(low = "blue", high = "red") +
   xlab("Teams in alphabetical order") +
   ylab("Goals") +
-  labs(title = "A man for all occassions",
+  labs(title = "The man for all occassions",
        subtitle = "Messi's goals against teams doesn't fluctutae too much depending on quality. In particular, Messi's record\nagainst Sevilla is quite remarkable scoring, on average, just under two and a half goals a season against\nthem over 13 seaons",
-       caption = "Data source: StatsBomb") +
+       caption = "Data source") +
   geom_text_repel(aes(label = ifelse(Goals > 14 ,paste(OpposingTeam,"(",Goals,")"),'')), size = 4, family = 'Segoe UI Light', colour = 'Black', vjust = 1, hjust = 0) +
+  coord_cartesian(ylim = c(0,30), clip = "off") +
+  annotation_custom(img, xmin = 25, xmax = 37, ymin = 0, ymax = -8) +
   theme(text=element_text(size = 12, family = "Segoe UI Light"),
        panel.background = element_blank(),
+       plot.title = element_text(face = "bold"),
+       plot.caption = element_text(hjust = 0.78, vjust = 9),
        axis.text.x = element_blank(),
        axis.ticks.x = element_blank(),
        axis.line.x = element_line(color = "black", size = 0.5),
        axis.line.y = element_line(color = "black", size = 0.5))
 
 ## goal map
-
-create_Pitch(background_colour = "#224C56", grass_colour = "#224C56", goal_colour = "#15393D", line_colour = "#B3CED9") +
-  geom_segment(data = goal_opposition_data, aes(x = location.x, y = location.y,
-                                  xend = shot.end_location.x, yend = shot.end_location.y),
-               lineend = "round", size = 0.6, arrow = arrow(length = unit(0.08, "inches"))) +
-  scale_y_reverse() + # reverses the y axis. otherwise data would be on the wrong side of the pitch
-  theme(legend.position = "None") + 
-  coord_fixed(ratio = 85/100) ## prevents it from looking stretched
-
-
-create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "black", goaltype = "box", BasicFeatures = TRUE) +
-  geom_segment(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y,
-                    xend = shot.end_location.x, yend = shot.end_location.y, colour = shot.statsbomb_xg), size = 1) +
-  scale_colour_gradient(low = "blue", high = "red") +
-  guides(fill = guide_legend(title = "Body"))
-  geom_point(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 3) +
-  scale_fill_manual(values = c("white","light blue","green","red")) +
-  scale_y_reverse() + # reverses the y axis. otherwise data would be on the wrong side of the pitch
-  theme(legend.position = "left",
-        plot.margin = unit(c(0,0,0,4),"cm")) +
-  coord_cartesian(xlim = c(80,140))
-  coord_fixed(ratio = 85/100) ## prevents it from looking stretched
   
 ## stick legend on bottom with source and title and stuff on top
 
-  
-create_Pitch() + 
-  coord_flip()
 
 create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "dark blue", goaltype = "box", BasicFeatures = FALSE) +
   geom_segment(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y,
@@ -713,27 +705,25 @@ create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = 
   scale_colour_gradient(low = "#0066Cc", high = "#FF0033") +
   geom_point(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 3.5) +
   scale_fill_manual(values = c("white","#0000CD","green","#DC143C")) +
-  labs(fill = "Body part", colour ="Statsbomb XG") +
+  labs(fill = "Goal method", colour ="Statsbomb XG") +
   coord_flip(xlim = c(75,125),ylim = c(-5,85))+
   scale_y_reverse() +
   guides(fill = guide_legend(order=2),
          colour = guide_colourbar(order=1))+
   labs(title = "Messi does not care for XG",
-       subtitle = "Messi's 18/19 season goal map",
+       subtitle = "Messi's 18/19 season goal map - a season",
        caption = "Data source") +
-  annotation_custom(img, xmin = 75, xmax = 90, ymin = -50, ymax = -79) +
+  annotation_custom(img, xmin = 60, xmax = 90, ymin = -50, ymax = -75) +
   theme(text=element_text(size = 12, family = "Segoe UI Light"),
-        plot.title = element_text(hjust = 0.05, vjust = -4, size = 20, face = "bold", colour = "#333399"),
-        plot.subtitle = element_text(hjust = 0.04, vjust = -8, face = "bold", colour = "#990000"),
-        plot.caption = element_text(hjust = 0.69, vjust = 32, size = 12),
+        plot.title = element_text(hjust = 0.05, vjust = -2, size = 26, face = "bold", colour = "#333399"),
+        plot.subtitle = element_text(hjust = 0.04, vjust = -6, size = 14, face = "bold", colour = "#990000"),
+        plot.caption = element_text(hjust = 0.69, vjust = 15, size = 12),
+        plot.margin = unit(c(0,0,1.5,0),"cm"),
         legend.direction = "horizontal",
-        legend.position = c(0.35,0.15))
+        legend.position = c(0.35,0))
 
-create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "dark blue", goaltype = "box", BasicFeatures = FALSE) +
-  coord_flip(xlim = c(75,125),ylim = c(-5,85)) +
-  scale_y_reverse() +
-  annotation_custom(img, xmin = 75, xmax = 100, ymin = -40, ymax = -78) 
-  
+
+
   
   
   
