@@ -563,6 +563,69 @@ all_seasons <- rbind(barca_06_07, barca_07_08, barca_08_09, barca_09_10, barca_1
       barca_16_17, barca_17_18, barca_18_19)
 
 all_seasons <- drop_na(all_seasons)
+all_seasons$goal_contributions <- all_seasons$goals + all_seasons$assists
+
+## top two goal contributors in each season
+
+goal_contributors_06_07 <- all_seasons %>% filter(season == "06/07") %>% arrange(desc(goal_contributions))
+goal_contributors_06_07[2,] <- goal_contributors_06_07[3,] ## eto is actually second
+goal_contributors_06_07 <- goal_contributors_06_07[c(1,2),]
+
+goal_contributors_07_08 <- all_seasons %>% filter(season == "07/08") %>% arrange(desc(goal_contributions))
+goal_contributors_07_08 <- goal_contributors_07_08[c(1,2),]
+
+goal_contributors_08_09 <- all_seasons %>% filter(season == "08/09") %>% arrange(desc(goal_contributions))
+goal_contributors_08_09 <- goal_contributors_08_09[c(1,2),]
+
+goal_contributors_09_10 <- all_seasons %>% filter(season == "09/10") %>% arrange(desc(goal_contributions))
+goal_contributors_09_10 <- goal_contributors_09_10[c(1,2),]
+
+goal_contributors_10_11 <- all_seasons %>% filter(season == "10/11") %>% arrange(desc(goal_contributions))
+goal_contributors_10_11 <- goal_contributors_10_11[c(1,2),]
+
+goal_contributors_11_12 <- all_seasons %>% filter(season == "11/12") %>% arrange(desc(goal_contributions))
+goal_contributors_11_12 <- goal_contributors_11_12[c(1,2),]
+
+goal_contributors_12_13 <- all_seasons %>% filter(season == "12/13") %>% arrange(desc(goal_contributions))
+goal_contributors_12_13 <- goal_contributors_12_13[c(1,2),]
+
+goal_contributors_13_14 <- all_seasons %>% filter(season == "13/14") %>% arrange(desc(goal_contributions))
+goal_contributors_13_14 <- goal_contributors_13_14[c(1,2),]
+
+goal_contributors_14_15 <- all_seasons %>% filter(season == "14/15") %>% arrange(desc(goal_contributions))
+goal_contributors_14_15 <- goal_contributors_14_15[c(1,2),]
+
+goal_contributors_15_16 <- all_seasons %>% filter(season == "15/16") %>% arrange(desc(goal_contributions))
+goal_contributors_15_16 <- goal_contributors_15_16[c(1,2),]
+
+goal_contributors_16_17 <- all_seasons %>% filter(season == "16/17") %>% arrange(desc(goal_contributions))
+goal_contributors_16_17 <- goal_contributors_16_17[c(1,2),]
+
+goal_contributors_17_18 <- all_seasons %>% filter(season == "17/18") %>% arrange(desc(goal_contributions))
+goal_contributors_17_18 <- goal_contributors_17_18[c(1,2),]
+
+goal_contributors_18_19 <- all_seasons %>% filter(season == "18/19") %>% arrange(desc(goal_contributions))
+goal_contributors_18_19 <- goal_contributors_18_19[c(1,2),]
+
+all_goal_contributors <- rbind(goal_contributors_06_07, goal_contributors_07_08, goal_contributors_08_09, goal_contributors_09_10, goal_contributors_10_11,
+                               goal_contributors_11_12, goal_contributors_12_13, goal_contributors_13_14, goal_contributors_14_15, goal_contributors_15_16,
+                               goal_contributors_16_17, goal_contributors_17_18, goal_contributors_18_19)
+
+all_goal_contributors$messnotmessi <- ifelse(all_goal_contributors$player.id == 5503, 0, 1)
+
+# messi vs barcelona
+
+ggplot(all_goal_contributors, aes(x = season, y = goal_contributions, group = messnotmessi, colour = as.factor(messnotmessi))) +
+  geom_point(size = 2.5) + 
+  geom_line(size = 1, linetype = "dashed") +
+  scale_colour_manual(values = c("#DC143C","#0000CD")) +
+  theme(text=element_text(size = 12, family = "Segoe UI Light"),
+        plot.caption = element_text(hjust = .82, vjust = 8.5),
+        panel.background = element_blank(),
+        axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5),
+        legend.direction = "horizontal",
+        legend.position = "bottom") 
 
 # messi summary data only
 
@@ -720,6 +783,8 @@ ggplot(goals_by_the_minute ,aes(x = minute, y = Goals, fill = Goals)) +
 #  geom_vline(xintercept = 45, linetype = 'dashed', color = 'orange', size = 1.5) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
+  labs(title = "Messi's goals by the minute",
+       subtitle = "This is based on regulation time. Goals in the 90th, or after, are grouped together") +
   geom_text_repel(aes(label = ifelse(Goals == 0 ,minute,'')), family = 'Segoe UI Light', colour = 'Black', nudge_y = 10) +
   theme(text=element_text(size = 12, family = "Segoe UI Light"),
         panel.background = element_blank(),
@@ -727,6 +792,8 @@ ggplot(goals_by_the_minute ,aes(x = minute, y = Goals, fill = Goals)) +
         #plot.caption = element_text(hjust = 0.78, vjust = 9),
         axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5))
+
+view(goal_opposition_data %>% filter(minute > 89))
 
 ## goal map
 
@@ -754,8 +821,19 @@ create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = 
         legend.position = c(0.35,0))
 
 
+## heat map of goals
 
-  
+create_Pitch(background_colour = "black", grass_colour = "black", goal_colour = "black", line_colour = "white", goaltype = "box", BasicFeatures = FALSE) +
+  stat_density_2d(data = goal_opposition_data, aes(x = location.x, y = location.y, fill = ..level..), geom = "polygon") +
+  scale_fill_gradient(low = "#33FF33", high = "#CC0000") +
+  coord_flip(xlim = c(75,125),ylim = c(-5,85))+
+  scale_y_reverse() + 
+  theme(text=element_text(size = 12, family = "Segoe UI Light"),
+        plot.title = element_text(hjust = 0.05, vjust = -2, size = 26, face = "bold", colour = "#333399"),
+        plot.subtitle = element_text(hjust = 0.04, vjust = -6, size = 14, face = "bold", colour = "#990000"),
+        plot.caption = element_text(hjust = 0.69, vjust = 15, size = 12),
+        plot.margin = unit(c(0,0,1.5,0),"cm"),
+        legend.position = "none")
   
   
   
