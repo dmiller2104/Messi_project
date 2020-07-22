@@ -612,15 +612,32 @@ all_goal_contributors <- rbind(goal_contributors_06_07, goal_contributors_07_08,
                                goal_contributors_16_17, goal_contributors_17_18, goal_contributors_18_19)
 
 all_goal_contributors$messnotmessi <- ifelse(all_goal_contributors$player.id == 5503, 0, 1)
+easy_names <- c("Ronaldinho","Lionel Messi","Lionel Messi","Thierry Henry","Lionel Messi","Samuel Eto'o","Lionel Messi","Zlatan Ibrahimovic",
+                "Lionel Messi","David Villa","Lionel Messi","Cesc Fabregas","Lionel Messi","Cesc Fabregas","Lionel Messi","Alexis Sanchez","Lionel Messi",
+                "Neymar","Luis Suarez", "Lionel Messi","Lionel Messi","Luis Suarez","Lionel Messi","Luis Suarez","Lionel Messi","Luis Suarez")
+
+all_goal_contributors$easy_names <- easy_names
 
 # messi vs barcelona
 
-ggplot(all_goal_contributors, aes(x = season, y = goal_contributions, group = messnotmessi, colour = as.factor(messnotmessi))) +
-  geom_point(size = 2.5) + 
-  geom_line(size = 1, linetype = "dashed") +
-  scale_colour_manual(values = c("#DC143C","#0000CD")) +
+# as a residual plot
+
+goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_contributions)) +
+  geom_point(data = all_goal_contributors %>% filter(messnotmessi == 1),colour = "#DC143c",size = 2.6) + 
+  geom_point(data = all_goal_contributors %>% filter(messnotmessi == 0),colour = "#0000CD",size = 2.6) + 
+  geom_line(size = 1, linetype = "dashed", colour = "#996699") +
+  xlab("Season") +
+  ylab("Goal contributions") +
+  labs(title = "The rise and continued reliability of Messi",
+       subtitle = "In 11 out of 13 full seasons Messi has been Barca's chief provider in goal contributions (goals & assists).\nIn the 11/12 season had nearly 50 goal contributions more than the next player",
+       caption = "Data source") +
+  coord_cartesian(ylim = c(16,65), clip = "off") +
+  annotation_custom(img, xmin = 9, xmax = 13.5, ymin = 0, ymax = 13) +
+  geom_text_repel(aes(label = ifelse(easy_names != "Lionel Messi",paste(easy_names," (",goals,",",assists,")"),"")), size = 3, family = 'Segoe UI Light', colour = 'Black', vjust = 1, hjust = 0.5) +
+  geom_text_repel(aes(label = ifelse(easy_names == "Lionel Messi",paste("(",goals,",",assists,")"),"")), size = 3, family = 'Segoe UI Light', colour = 'Black', vjust = -2, hjust = 0) +
   theme(text=element_text(size = 12, family = "Segoe UI Light"),
-        plot.caption = element_text(hjust = .82, vjust = 8.5),
+        plot.title = element_text(face = "bold"),
+        plot.caption = element_text(hjust = .74, vjust = 8.5),
         panel.background = element_blank(),
         axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
@@ -704,23 +721,6 @@ goal_by_type <- ggplot(a[order(a$value, decreasing = T),],
         plot.caption = element_text(vjust = 8.25, hjust = 0.71),
         panel.background = element_blank())
 
-## dot plot alternative
-
-ggplot(a[order(a$value, decreasing = T),],
-       aes(x = season, y = value, fill = factor(
-         name, levels = rev(c("left_footed_goals","right_footed_goals","headed_goals","other_goals","free_kick_goals","penalty_goals"))))) +
-  geom_dotplot(binaxis = "y")+
-  scale_fill_manual(values = c("#0000CC","#3333FF","#0099FF","#FF9999","#FF3333","#CC0033"),
-                    name = "Goal method",
-                    breaks = c("left_footed_goals","right_footed_goals","headed_goals","other_goals","free_kick_goals","penalty_goals"),
-                    labels = c("Left foot", "Right foot", "Header","Other","Free Kick", "Penalty")) +
-  ylab("Goals") +
-  xlab("Season") +
-  labs(title = "Dont let him get on his left foot!",
-       subtitle = "It comes as no surprise that most of Messi's goals come from his left foot, but we can also see an increasing\nnumber of free kicks making up his seasons tallies",
-       caption = "Data source: StatsBomb") +
-  theme(text=element_text(size = 12, family = "Segoe UI Light"),
-        panel.background = element_blank())
 
 ## favourite opposition - scored against
 
