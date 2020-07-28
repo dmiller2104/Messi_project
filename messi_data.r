@@ -5,6 +5,8 @@ library(dplyr)
 library(tidyverse)
 library(StatsBombR)
 library(FC.rSTATS)
+library(soccermatics)
+library(ggsoccer)
 library(SBpitch)
 library(formattable)
 library(RColorBrewer)
@@ -191,11 +193,14 @@ barca_06_07 <- barca_06_07 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_06_07 <- get.opposingteam(la_liga_06_07) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                          filter(player.id == 5503) %>% 
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
                                  shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
                                  OpposingTeam)
 goal_opposition_06_07$season <- "06/07"
+
+appearances_06_07 <- goal_opposition_06_07 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 
 ##
 
@@ -222,11 +227,14 @@ barca_07_08 <- barca_07_08 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_07_08 <- get.opposingteam(la_liga_07_08) %>% filter(team.name == "Barcelona") %>%
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>% 
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_07_08$season <- "07/08"
+
+appearances_07_08 <- goal_opposition_07_08 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 
 ##
 
@@ -252,11 +260,13 @@ barca_08_09 <- barca_08_09 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_08_09 <- get.opposingteam(la_liga_08_09) %>% filter(team.name == "Barcelona") %>%
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>% 
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_08_09$season <- "08/09"
+
+appearances_08_09 <- goal_opposition_08_09 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
 
 
 barca_09_10 <- la_liga_09_10 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
@@ -281,11 +291,14 @@ barca_09_10 <- barca_09_10 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_09_10 <- get.opposingteam(la_liga_09_10) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>%  
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_09_10$season <- "09/10"
+
+appearances_09_10 <- goal_opposition_09_10 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 
 ##
 
@@ -311,11 +324,14 @@ barca_10_11 <- barca_10_11 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_10_11 <- get.opposingteam(la_liga_10_11) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>% 
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_10_11$season <- "10/11"
+
+appearances_10_11 <- goal_opposition_10_11 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 
 ##
 
@@ -341,11 +357,14 @@ barca_11_12 <- barca_11_12 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_11_12 <- get.opposingteam(la_liga_11_12) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>%
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_11_12$season <- "11/12"
+
+appearances_11_12 <- goal_opposition_11_12 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 
 ##
 
@@ -371,11 +390,13 @@ barca_12_13 <- barca_12_13 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_12_13 <- get.opposingteam(la_liga_12_13) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>%  
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_12_13$season <- "12/13"
+
+appearances_12_13 <- goal_opposition_12_13 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
 
 ##
 
@@ -401,11 +422,13 @@ barca_13_14 <- barca_13_14 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_13_14 <- get.opposingteam(la_liga_13_14) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>%  
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_13_14$season <- "13/14"
+
+appearances_13_14 <- goal_opposition_13_14 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
 
 ##
 
@@ -431,11 +454,13 @@ barca_14_15 <- barca_14_15 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_14_15 <- get.opposingteam(la_liga_14_15) %>% filter(team.name == "Barcelona") %>% 
-                            filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                            select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                            shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                            OpposingTeam)
+                            filter(player.id == 5503) %>% 
+                            select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                   shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                   OpposingTeam)
 goal_opposition_14_15$season <- "14/15"
+
+appearances_14_15 <- goal_opposition_14_15 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
 
 ##
 
@@ -461,11 +486,14 @@ barca_15_16 <- barca_15_16 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_15_16 <- get.opposingteam(la_liga_15_16) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>% 
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_15_16$season <- "15/16"
+
+appearances_15_16 <- goal_opposition_15_16 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 ##
 
 barca_16_17 <- la_liga_16_17 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
@@ -490,11 +518,14 @@ barca_16_17 <- barca_16_17 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_16_17 <- get.opposingteam(la_liga_16_17) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>%
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_16_17$season <- "16/17"
+
+appearances_16_17 <- goal_opposition_16_17 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 ##
 
 barca_17_18 <- la_liga_17_18 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
@@ -519,11 +550,13 @@ barca_17_18 <- barca_17_18 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_17_18 <- get.opposingteam(la_liga_17_18) %>% filter(team.name == "Barcelona") %>%
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>% 
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_17_18$season <- "17/18"
+
+appearances_17_18 <- goal_opposition_17_18 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
 
 ##
 
@@ -549,11 +582,14 @@ barca_18_19 <- barca_18_19 %>% mutate(nineties = minutes/90)
 ## opposing data ##
 
 goal_opposition_18_19 <- get.opposingteam(la_liga_18_19) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% filter(shot.outcome.name == 'Goal') %>% 
-                          select(minute, shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                          shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                          OpposingTeam)
+                          filter(player.id == 5503) %>% 
+                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+                                 OpposingTeam)
 goal_opposition_18_19$season <- "18/19"
+
+appearances_18_19 <- goal_opposition_18_19 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
 ##
 
 ## rowbind to get all season together
@@ -628,7 +664,7 @@ goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_con
   geom_line(size = 1, linetype = "dashed", colour = "#996699") +
   xlab("Season") +
   ylab("Goal contributions") +
-  labs(title = "The rise and continued reliability of Messi",
+  labs(title = "The rise and continued reliability on Messi",
        subtitle = "In 11 out of 13 full seasons Messi has been Barca's chief provider in goal contributions (goals & assists).\nIn the 11/12 season had nearly 50 goal contributions more than the next player",
        caption = "Data source") +
   coord_cartesian(ylim = c(16,65), clip = "off") +
@@ -729,36 +765,69 @@ goal_opposition_data <- rbind(goal_opposition_06_07, goal_opposition_07_08, goal
                               goal_opposition_14_15, goal_opposition_15_16, goal_opposition_16_17, goal_opposition_17_18,
                               goal_opposition_18_19)
 
+goal_opposition_data <- goal_opposition_data %>% filter(shot.outcome.name == "Goal")
+
+teams <- rbind(appearances_06_07, appearances_07_08, appearances_08_09, appearances_09_10, appearances_10_11, appearances_11_12,
+      appearances_12_13, appearances_12_13, appearances_13_14, appearances_14_15, appearances_15_16, appearances_16_17,
+      appearances_17_18, appearances_18_19)
+
+teams <- unique(teams$OpposingTeam)
+teams <- data.frame(teams)
+colnames(teams)[1] <- "OpposingTeam"
+teams <- left_join(teams,appearances_06_07, by = "OpposingTeam")
+teams <- left_join(teams,appearances_07_08, by = "OpposingTeam")
+teams <- left_join(teams,appearances_08_09, by = "OpposingTeam")
+teams <- left_join(teams,appearances_09_10, by = "OpposingTeam")
+teams <- left_join(teams,appearances_10_11, by = "OpposingTeam")
+teams <- left_join(teams,appearances_11_12, by = "OpposingTeam")
+teams <- left_join(teams,appearances_12_13, by = "OpposingTeam")
+teams <- left_join(teams,appearances_13_14, by = "OpposingTeam")
+teams <- left_join(teams,appearances_14_15, by = "OpposingTeam")
+teams <- left_join(teams,appearances_15_16, by = "OpposingTeam")
+teams <- left_join(teams,appearances_16_17, by = "OpposingTeam")
+teams <- left_join(teams,appearances_17_18, by = "OpposingTeam")
+teams <- left_join(teams,appearances_18_19, by = "OpposingTeam")
+messi_apperances <- rowSums(teams[,-1],na.rm = TRUE)
+messi_apperances <- data.frame(messi_apperances)
+teams <- unique(teams$OpposingTeam)
+teams <- data.frame(teams)
+colnames(teams)[1] <- "OpposingTeam"
+teams$messi_apperances <- messi_apperances
+
 goal_opposition_data <- drop_na(goal_opposition_data)
 ## increasing minute value by 1, to be in keeping with traditional football records
 goal_opposition_data$minute <- goal_opposition_data$minute+1
 
 goal_tally <- goal_opposition_data %>% group_by(OpposingTeam) %>% tally()
 goal_tally <- rename(goal_tally, Goals = n)
+goal_tally <- left_join(goal_tally, teams, by = "OpposingTeam")
 
-## bubble plot of favourite opposition
 
-goals_against_teams <- ggplot(goal_tally, aes(x = OpposingTeam, y = Goals, size = Goals, color = Goals)) + 
+## bubble plot of favourite opposition # minimum games 4
+
+goals_against_teams <- ggplot(goal_tally %>% filter(messi_apperances >=4), aes(x = OpposingTeam, y = Goals, size = Goals, color = Goals)) + 
   geom_point(alpha = 0.85) +
   scale_size(range = c(.1,16), guide = "none") +
   scale_colour_gradient(low = "blue", high = "red") +
   xlab("Teams in alphabetical order") +
   ylab("Goals") +
-  labs(title = "The man for all occassions",
+  labs(title = "The man for all occassions (minmum of four appearances per team)",
        subtitle = "Messi's goals against teams doesn't fluctutae too much depending on quality. In particular, Messi's record\nagainst Sevilla is quite remarkable scoring, on average, just under two and a half goals a season against\nthem over 13 seaons",
        caption = "Data source") +
   geom_text_repel(aes(label = ifelse(Goals > 14 ,paste(OpposingTeam,"(",Goals,")"),'')), size = 4, family = 'Segoe UI Light', colour = 'Black', vjust = 1, hjust = 0) +
   coord_cartesian(ylim = c(0,30), clip = "off") +
-  annotation_custom(img, xmin = 25, xmax = 37, ymin = 0, ymax = -8) +
-  theme(text=element_text(size = 12, family = "Segoe UI Light"),
+  annotation_custom(img, xmin = 20, xmax = 32, ymin = 0, ymax = -8) +
+  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
        panel.background = element_blank(),
        plot.title = element_text(face = "bold"),
-       plot.caption = element_text(hjust = 0.78, vjust = 9),
+       plot.subtitle = element_text(family = "Segoe UI Light", colour = '#003366'),
+       plot.caption = element_text(hjust = 0.78, vjust = 10, colour = '#333399'),
        axis.text.x = element_blank(),
        axis.ticks.x = element_blank(),
        axis.line.x = element_line(color = "black", size = 0.5),
        axis.line.y = element_line(color = "black", size = 0.5))
 
+## not to be published #####################
 
 ## goals by the minute
 goals_by_the_minute <- goal_opposition_data %>% filter(minute<90) %>% group_by(minute) %>% tally()
@@ -795,7 +864,10 @@ ggplot(goals_by_the_minute ,aes(x = minute, y = Goals, fill = Goals)) +
 
 view(goal_opposition_data %>% filter(minute > 89))
 
-## goal map
+##
+
+
+## goal map  ######
 
 create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "dark blue", goaltype = "box", BasicFeatures = FALSE) +
   geom_segment(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y,
@@ -823,18 +895,111 @@ create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = 
 
 ## heat map of goals
 
-create_Pitch(background_colour = "black", grass_colour = "black", goal_colour = "black", line_colour = "white", goaltype = "box", BasicFeatures = FALSE) +
-  stat_density_2d(data = goal_opposition_data, aes(x = location.x, y = location.y, fill = ..level..), geom = "polygon") +
-  scale_fill_gradient(low = "#33FF33", high = "#CC0000") +
+create_Pitch(background_colour = "#7Fc47f", grass_colour = "#7Fc47f", goal_colour = "white", line_colour = "white", goaltype = "box", BasicFeatures = FALSE) +
+  stat_density_2d(data = goal_opposition_data, aes(x = location.x, y = location.y, fill = ..level..), geom = "polygon", alpha = 0.8) +
+  scale_fill_gradient(low = "#FFFFCC", high = "#CC0033") +
   coord_flip(xlim = c(75,125),ylim = c(-5,85))+
   scale_y_reverse() + 
   theme(text=element_text(size = 12, family = "Segoe UI Light"),
         plot.title = element_text(hjust = 0.05, vjust = -2, size = 26, face = "bold", colour = "#333399"),
         plot.subtitle = element_text(hjust = 0.04, vjust = -6, size = 14, face = "bold", colour = "#990000"),
         plot.caption = element_text(hjust = 0.69, vjust = 15, size = 12),
-        plot.margin = unit(c(0,0,1.5,0),"cm"),
+        #plot.margin = unit(c(0,0,1.5,0),"cm"),
         legend.position = "none")
   
-  
-  
- 
+## test shot maps
+
+soccerShotmap(goal_opposition_data, lengthPitch = 120, widthPitch = 80, theme = "dark") 
+
+p <- soccerPitch(120, 80, theme = "blank") +
+  geom_bin2d(data = goal_opposition_data ,aes(x = location.x, y = location.y), bins = 12, binwidth = c(diff(x.range)[1], diff(y.range)[1])) +
+  scale_fill_gradient(low = "#FFFFCC", high = "#CC0033") +
+  scale_y_reverse() +
+  guides(fill = F) 
+
+soccerPitchFG(p, 120, 80) +
+  coord_flip(xlim = c(75,125),
+             ylim = c(-5, 85)) +
+  labs(title = "No where is safe",
+       subtitle = "Messi's goal heat map for 412 La Liga goals",
+       caption = "Data source") +
+  annotation_custom(img, xmin = 50, xmax = 100, ymin = -30, ymax = -79) +
+  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
+        plot.title = element_text(hjust = 0.05, vjust = -2, size = 26, face = "bold", colour = "#333399"),
+        plot.subtitle = element_text(hjust = 0.06, vjust = -6, size = 14, face = "bold", colour = "#990000"),
+        plot.caption = element_text(hjust = 0.48, vjust = 18, size = 12),
+        plot.margin = unit(c(0,0,1.5,0),"cm"),
+        legend.direction = "horizontal")
+
+p2 <- soccerPitch(120, 80, theme = "blank") +
+  stat_density_2d(data = goal_opposition_data, aes(x = location.x, y = location.y, fill = ..density..), geom = "raster", contour = FALSE) +
+  scale_fill_gradient(low = "white", high = "red") +
+  guides(fill = F)
+
+soccerPitchFG(p2, 120, 80) +
+  coord_flip(xlim = c(75,125),
+             ylim = c(-5, 85))
+
+## credit to the soccermatics team for the below. I was experiencing an issue with their heat map and fitting it to statsbomb data
+
+Bin_x <- 12
+Bin_y <- 12
+
+df <- goal_opposition_data[goal_opposition_data$location.x > 0 & goal_opposition_data$location.x < 120 & 
+           goal_opposition_data$location.y > 0 & goal_opposition_data$location.y < 80,]
+
+x.range <- seq(0, 120, length.out = Bin_x +1)
+y.range <- seq(0, 80, length.out = Bin_y +1)
+
+## poisson distribution of lionel messi goals
+
+recent_seasons <- messi_seasons %>% group_by(season) %>% 
+  select(minutes, nineties, goals, goals_per_90) %>% filter(season == "16/17" | season == "17/18" | season == "18/19") %>% group_by(minutes)
+
+recent_seasons$goal_odds <- recent_seasons$goals_per_90 / 90
+
+predict1 <- list()
+predict2 <- list()
+predict3 <- list()
+
+golaso <- 0
+golaso2 <- 0
+golaso3 <- 0
+rand_n <- 0
+
+for (n in 1:500){
+  golaso <- 0
+  golaso2 <- 0
+  golaso3 <- 0
+  for (i in 1:38){
+    for (j in 1:90){
+      rand_n <- runif(1, min = 0, max = 1)
+      
+      if (rand_n <= recent_seasons$goal_odds[1]){
+        golaso <- golaso + 1
+      }
+      if (rand_n <= recent_seasons$goal_odds[2]){
+        golaso2 <- golaso2 + 1
+      }
+      if (rand_n <= recent_seasons$goal_odds[3]){
+        golaso3 <- golaso3 + 1
+      }
+    }
+  }
+  predict1[[n]] <- golaso
+  predict2[[n]] <- golaso2
+  predict3[[n]] <- golaso3
+}
+
+df_predict1 <- data.frame(matrix(unlist(predict1), nrow = length(predict1), byrow = T))
+df_predict2 <- data.frame(matrix(unlist(predict2), nrow = length(predict2), byrow = T))
+df_predict3 <- data.frame(matrix(unlist(predict3), nrow = length(predict3), byrow = T))
+
+ggplot(df_predict1, aes(x=matrix.unlist.predict1...nrow...length.predict1...byrow...T.)) +
+  geom_bar()
+
+ggplot(df_predict2, aes(x=matrix.unlist.predict2...nrow...length.predict2...byrow...T.)) +
+  geom_bar()
+
+ggplot(df_predict3, aes(x=matrix.unlist.predict3...nrow...length.predict3...byrow...T.)) +
+  geom_bar()
