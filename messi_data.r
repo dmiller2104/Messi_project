@@ -667,13 +667,13 @@ goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_con
   labs(title = "The rise and continued reliability on Messi",
        subtitle = "In 11 out of 13 full seasons Messi has been Barca's chief provider in goal contributions (goals & assists).\nIn the 11/12 season had nearly 50 goal contributions more than the next player",
        caption = "Data source") +
-  coord_cartesian(ylim = c(16,65), clip = "off") +
+  coord_cartesian(ylim = c(15,65), clip = "off") +
   annotation_custom(img, xmin = 9, xmax = 13.5, ymin = 0, ymax = 13) +
   geom_text_repel(aes(label = ifelse(easy_names != "Lionel Messi",paste(easy_names," (",goals,",",assists,")"),"")), size = 3, family = 'Segoe UI Light', colour = 'Black', vjust = 1, hjust = 0.5) +
   geom_text_repel(aes(label = ifelse(easy_names == "Lionel Messi",paste("(",goals,",",assists,")"),"")), size = 3, family = 'Segoe UI Light', colour = 'Black', vjust = -2, hjust = 0) +
-  theme(text=element_text(size = 12, family = "Segoe UI Light"),
+  theme(text=element_text(size = 11, family = "Ebrima"),
         plot.title = element_text(face = "bold"),
-        plot.caption = element_text(hjust = .74, vjust = 8.5),
+        plot.caption = element_text(hjust = .63, vjust = 5),
         panel.background = element_blank(),
         axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
@@ -723,13 +723,14 @@ goals_per_90_plot <- ggplot(messi_seasons, aes(x = season, y = goals_per_90, fil
   scale_x_discrete(limits = rev(messi_seasons$season)) +
   ylab("Goals per 90 minutes") +
   xlab("Season") +
-  coord_cartesian(ylim = c(0,50), clip = "off") +
   scale_y_continuous(expand = c(0,0)) +
+  coord_cartesian(ylim = c(-2,2), clip = "off") +
+  annotation_custom(img, xmin = 12, xmax = 14, ymin = 1, ymax = 1.5) +
   coord_flip() +
   labs(title = "Back of the net, time and again",
-      subtitle = "Messi has been averaging nearly a goal a game, and in some cases more (Seasons 09/10, 11/12, 14/15, 16/17, 18/19)",
+      subtitle = "Messi has been averaging nearly a goal a game, and in some cases more (Seasons 09/10, 11/12,\n14/15, 16/17, 18/19)",
        caption = "Data source: StatsBomb") +
-  theme(text=element_text(size = 10.5, family = "Segoe UI Light"),
+  theme(text=element_text(size = 10.5, family = "Ebrima"),
         panel.background = element_blank())
 
 ## stacked barchart goals by type 
@@ -747,15 +748,18 @@ goal_by_type <- ggplot(a[order(a$value, decreasing = T),],
                       labels = c("Left foot", "Right foot", "Header","Other","Free Kick", "Penalty")) +
   ylab("Goals") +
   xlab("Season") +
+  scale_y_continuous(expand = c(0,0)) +
   coord_cartesian(ylim = c(0,50), clip = "off") +
-  annotation_custom(img, xmin = 8.5, xmax = 13.5, ymin = 0, ymax = -18) +
+  annotation_custom(img, xmin = 8.45, xmax = 12.5, ymin = 0, ymax = -12) +
   labs(title = "Dont let him get on his left foot!",
        subtitle = "It comes as no surprise that most of Messi's goals come from his left foot, but we can also see an increasing\nnumber of free kicks making up his seasons tallies",
        caption = "Data source") +
-  theme(text=element_text(size = 11, family = "Segoe UI Light"),
+  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
         plot.title = element_text(face = "bold"),
         plot.caption = element_text(vjust = 8.25, hjust = 0.71),
-        panel.background = element_blank())
+        panel.background = element_blank(),
+        axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
 
 
 ## favourite opposition - scored against
@@ -807,7 +811,7 @@ goal_tally <- left_join(goal_tally, teams, by = "OpposingTeam")
 
 goals_against_teams <- ggplot(goal_tally %>% filter(messi_apperances >=4), aes(x = OpposingTeam, y = Goals, size = Goals, color = Goals)) + 
   geom_point(alpha = 0.85) +
-  scale_size(range = c(.1,16), guide = "none") +
+  scale_size(range = c(.1,18), guide = "none") +
   scale_colour_gradient(low = "blue", high = "red") +
   xlab("Teams in alphabetical order") +
   ylab("Goals") +
@@ -954,52 +958,57 @@ y.range <- seq(0, 80, length.out = Bin_y +1)
 ## poisson distribution of lionel messi goals
 
 recent_seasons <- messi_seasons %>% group_by(season) %>% 
-  select(minutes, nineties, goals, goals_per_90) %>% filter(season == "16/17" | season == "17/18" | season == "18/19") %>% group_by(minutes)
+  select(minutes, nineties, goals, goals_per_90) %>% filter(season == "14/15" | season == "15/16" | season == "16/17" | season == "17/18" | season == "18/19") %>% group_by(minutes)
 
-recent_seasons$goal_odds <- recent_seasons$goals_per_90 / 90
+recent_seasons$appearances <- c(sum(appearances_14_15$appearances), sum(appearances_15_16$appearances), sum(appearances_16_17$appearances),sum(appearances_17_18$appearances),sum(appearances_18_19$appearances))
+recent_seasons$goal_odds <- (recent_seasons$goals/recent_seasons$appearances)/90
+recent_seasons$goals_per_game <- recent_seasons$goals/recent_seasons$appearances
 
+season_average <- sum(recent_seasons$goals)/nrow(recent_seasons)
+goals_per_game <- season_average/38
+odds_per_90 <- goals_per_game/90
+
+set.seed(2)
 predict1 <- list()
-predict2 <- list()
-predict3 <- list()
 
 golaso <- 0
-golaso2 <- 0
-golaso3 <- 0
 rand_n <- 0
 
-for (n in 1:500){
+for (j in 1:500){
   golaso <- 0
-  golaso2 <- 0
-  golaso3 <- 0
   for (i in 1:38){
-    for (j in 1:90){
+    for (n in 1:90){
       rand_n <- runif(1, min = 0, max = 1)
-      
-      if (rand_n <= recent_seasons$goal_odds[1]){
+      if (rand_n <= odds_per_90){
         golaso <- golaso + 1
-      }
-      if (rand_n <= recent_seasons$goal_odds[2]){
-        golaso2 <- golaso2 + 1
-      }
-      if (rand_n <= recent_seasons$goal_odds[3]){
-        golaso3 <- golaso3 + 1
       }
     }
   }
-  predict1[[n]] <- golaso
-  predict2[[n]] <- golaso2
-  predict3[[n]] <- golaso3
+  predict1[[j]] <- golaso
 }
 
 df_predict1 <- data.frame(matrix(unlist(predict1), nrow = length(predict1), byrow = T))
-df_predict2 <- data.frame(matrix(unlist(predict2), nrow = length(predict2), byrow = T))
-df_predict3 <- data.frame(matrix(unlist(predict3), nrow = length(predict3), byrow = T))
+colnames(df_predict1)[1] <- "Goals"
 
-ggplot(df_predict1, aes(x=matrix.unlist.predict1...nrow...length.predict1...byrow...T.)) +
-  geom_bar()
+poisson_distribution <- c()
+  
+for (i in 1:500){
+  poisson_distribution <- c(poisson_distribution,dpois(df_predict1$Goals[i],season_average))
+}
 
-ggplot(df_predict2, aes(x=matrix.unlist.predict2...nrow...length.predict2...byrow...T.)) +
-  geom_bar()
+df_predict1$probs <- poisson_distribution
+transformer <- df_predict1$Goals[1]/df_predict1$probs[1]
 
-ggplot(df_predict3, aes(x=matrix.unlist.predict3...nrow...length.predict3...byrow...T.)) +
-  geom_bar()
+goal_distribution <- ggplot(df_predict1, aes(x=Goals)) +
+  geom_bar(stat = "count", fill = "#CC3333") +
+  geom_line(aes(y = probs*transformer), colour = "Blue", size = 1.5, linetype = "dashed", alpha = 0.7) +
+  scale_y_continuous(expand = c(0,0), name = "Occurences", sec.axis = sec_axis(~. /transformer, name = "Probability %")) +
+  labs(title = "Poisson distribution of the probability of Messi's goals tally",
+       subtitle = "Looking at the last five seasons, Messi has socred a mean of 35.2") +
+  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
+        panel.background = element_blank(),
+        plot.title = element_text(face = "bold"),
+        plot.subtitle = element_text(family = "Segoe UI Light", colour = '#003366'),
+        axis.line.x = element_line(color = "black", size = 0.5),
+        axis.line.y = element_line(color = "black", size = 0.5))
+
