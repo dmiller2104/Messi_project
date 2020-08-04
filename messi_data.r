@@ -1,4 +1,4 @@
-## libraries
+## necssary libraries
 
 library(ggplot2)
 library(dplyr)
@@ -17,12 +17,10 @@ font_import()
 loadfonts(device = "win")
 # fonts() to check fonts available
 
-## get logo ##
+## get statsbomb logo ##
 img <- grid::rasterGrob(png::readPNG("statsbomb_logo.png"), interpolate = TRUE)
 
-ggplot() + annotation_custom(img, xmin = 0.5, xmax = 0.9, ymin = -0.5, ymax = 1)
-
-## la liga datasets
+## la liga datasets - 13 seasons worth ##
 
 la_liga_06_07 <- FreeCompetitions() %>% 
   filter(competition_id == 11 & season_name == '2006/2007')
@@ -63,7 +61,9 @@ la_liga_17_18 <- FreeCompetitions() %>%
 la_liga_18_19 <- FreeCompetitions() %>% 
   filter(competition_id == 11 & season_name == '2018/2019')
 
-# data preparation 
+# data preparation, getting match data, cleaning and getting minutes for games
+# la liga gives us the league and match level data
+# minutes gives us the minutes played per season per player
 
 la_liga_06_07 <- FreeMatches(la_liga_06_07)
 la_liga_06_07 <- StatsBombFreeEvents(MatchesDF = la_liga_06_07, Parallel = T)
@@ -171,440 +171,213 @@ minutes_18_19 <- minutes_18_19 %>%
 
 ## barcelona specific data
 
-barca_06_07 <- la_liga_06_07 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_06_07 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+# this function pulls together barcelona specific data, by player, including chances created, assists, Xg, and details on goal data like how it was scored
+
+barca_get_data <- function(la_liga_season){
+  barca_df <- la_liga_season %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
+        summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+                  assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+                  XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+                  goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+                  percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
+                                                   sum(la_liga_season %>% filter(team.name == "Barcelona") %>% 
+                                                         summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
+                  shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
+                  left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
+                  right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
+                  headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
+                  other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
+                  free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
+                  penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+}
+# the function is then applied to all previous la liga seasons
+
+barca_06_07 <- barca_get_data(la_liga_06_07)
 barca_06_07$season <- "06/07"
 barca_06_07 <- left_join(barca_06_07, minutes_06_07)
 barca_06_07 <- barca_06_07 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_06_07 <- get.opposingteam(la_liga_06_07) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% 
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_06_07$season <- "06/07"
-
-appearances_06_07 <- goal_opposition_06_07 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-
-##
-
-
-barca_07_08 <- la_liga_07_08 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_07_08 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_07_08 <- barca_get_data(barca_07_08,la_liga_07_08)
 barca_07_08$season <- "07/08"
 barca_07_08 <- left_join(barca_07_08, minutes_07_08)
 barca_07_08 <- barca_07_08 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_07_08 <- get.opposingteam(la_liga_07_08) %>% filter(team.name == "Barcelona") %>%
-                          filter(player.id == 5503) %>% 
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_07_08$season <- "07/08"
-
-appearances_07_08 <- goal_opposition_07_08 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-
-##
-
-barca_08_09 <- la_liga_08_09 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_08_09 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_08_09 <- barca_get_data(barca_08_09,la_liga_08_09)
 barca_08_09$season <- "08/09"
 barca_08_09 <- left_join(barca_08_09, minutes_08_09)
 barca_08_09 <- barca_08_09 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_08_09 <- get.opposingteam(la_liga_08_09) %>% filter(team.name == "Barcelona") %>%
-                          filter(player.id == 5503) %>% 
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_08_09$season <- "08/09"
-
-appearances_08_09 <- goal_opposition_08_09 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-
-barca_09_10 <- la_liga_09_10 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_09_10 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_09_10 <- barca_get_data(barca_09_10,la_liga_09_10)
 barca_09_10$season <- "09/10"
 barca_09_10 <- left_join(barca_09_10, minutes_09_10)
 barca_09_10 <- barca_09_10 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_09_10 <- get.opposingteam(la_liga_09_10) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>%  
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_09_10$season <- "09/10"
-
-appearances_09_10 <- goal_opposition_09_10 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-
-##
-
-barca_10_11 <- la_liga_10_11 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_10_11 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_10_11 <- barca_get_data(barca_10_11,la_liga_10_11)
 barca_10_11$season <- "10/11"
 barca_10_11 <- left_join(barca_10_11, minutes_10_11)
 barca_10_11 <- barca_10_11 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_10_11 <- get.opposingteam(la_liga_10_11) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% 
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_10_11$season <- "10/11"
-
-appearances_10_11 <- goal_opposition_10_11 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-
-##
-
-barca_11_12 <- la_liga_11_12 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_11_12 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_11_12 <- barca_get_data(barca_11_12,la_liga_11_12)
 barca_11_12$season <- "11/12"
 barca_11_12 <- left_join(barca_11_12, minutes_11_12)
 barca_11_12 <- barca_11_12 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_11_12 <- get.opposingteam(la_liga_11_12) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>%
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_11_12$season <- "11/12"
-
-appearances_11_12 <- goal_opposition_11_12 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-
-##
-
-barca_12_13 <- la_liga_12_13 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_12_13 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),            
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_12_13 <- barca_get_data(barca_12_13,la_liga_12_13)
 barca_12_13$season <- "12/13"
 barca_12_13 <- left_join(barca_12_13, minutes_12_13)
 barca_12_13 <- barca_12_13 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_12_13 <- get.opposingteam(la_liga_12_13) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>%  
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_12_13$season <- "12/13"
-
-appearances_12_13 <- goal_opposition_12_13 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-##
-
-barca_13_14 <- la_liga_13_14 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_13_14 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),  
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_13_14 <- barca_get_data(barca_13_14,la_liga_13_14)
 barca_13_14$season <- "13/14"
 barca_13_14 <- left_join(barca_13_14, minutes_13_14)
 barca_13_14 <- barca_13_14 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_13_14 <- get.opposingteam(la_liga_13_14) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>%  
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_13_14$season <- "13/14"
-
-appearances_13_14 <- goal_opposition_13_14 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-##
-
-barca_14_15 <- la_liga_14_15 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_14_15 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2), 
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_14_15 <- barca_get_data(barca_14_15,la_liga_14_15)
 barca_14_15$season <- "14/15"
 barca_14_15 <- left_join(barca_14_15, minutes_14_15)
 barca_14_15 <- barca_14_15 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_14_15 <- get.opposingteam(la_liga_14_15) %>% filter(team.name == "Barcelona") %>% 
-                            filter(player.id == 5503) %>% 
-                            select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                   shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                   OpposingTeam)
-goal_opposition_14_15$season <- "14/15"
-
-appearances_14_15 <- goal_opposition_14_15 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-##
-
-barca_15_16 <- la_liga_15_16 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_15_16 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_15_16 <- barca_get_data(barca_15_16,la_liga_15_16)
 barca_15_16$season <- "15/16"
 barca_15_16 <- left_join(barca_15_16, minutes_15_16)
 barca_15_16 <- barca_15_16 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_15_16 <- get.opposingteam(la_liga_15_16) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% 
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_15_16$season <- "15/16"
-
-appearances_15_16 <- goal_opposition_15_16 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-##
-
-barca_16_17 <- la_liga_16_17 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_16_17 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_16_17 <- barca_get_data(barca_16_17,la_liga_16_17)
 barca_16_17$season <- "16/17"
 barca_16_17 <- left_join(barca_16_17, minutes_16_17)
 barca_16_17 <- barca_16_17 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_16_17 <- get.opposingteam(la_liga_16_17) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>%
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_16_17$season <- "16/17"
-
-appearances_16_17 <- goal_opposition_16_17 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-##
-
-barca_17_18 <- la_liga_17_18 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_17_18 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_17_18 <- barca_get_data(barca_17_18,la_liga_17_18)
 barca_17_18$season <- "17/18"
 barca_17_18 <- left_join(barca_17_18, minutes_17_18)
 barca_17_18 <- barca_17_18 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_17_18 <- get.opposingteam(la_liga_17_18) %>% filter(team.name == "Barcelona") %>%
-                          filter(player.id == 5503) %>% 
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_17_18$season <- "17/18"
-
-appearances_17_18 <- goal_opposition_17_18 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-##
-
-barca_18_19 <- la_liga_18_19 %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-  summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-            assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-            XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-            goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-            percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                    sum(la_liga_18_19 %>% filter(team.name == "Barcelona") %>% 
-                                    summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-            shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-            left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-            headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-            other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-            free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-            penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+barca_18_19 <- barca_get_data(barca_18_19,la_liga_18_19)
 barca_18_19$season <- "18/19"
 barca_18_19 <- left_join(barca_18_19, minutes_18_19)
 barca_18_19 <- barca_18_19 %>% mutate(nineties = minutes/90)
 
-## opposing data ##
-
-goal_opposition_18_19 <- get.opposingteam(la_liga_18_19) %>% filter(team.name == "Barcelona") %>% 
-                          filter(player.id == 5503) %>% 
-                          select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
-                                 shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
-                                 OpposingTeam)
-goal_opposition_18_19$season <- "18/19"
-
-appearances_18_19 <- goal_opposition_18_19 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
-
-##
-
-## rowbind to get all season together
+## rowbind to get all seasons together
 
 all_seasons <- rbind(barca_06_07, barca_07_08, barca_08_09, barca_09_10, barca_10_11,
-      barca_11_12, barca_12_13, barca_13_14, barca_14_15, barca_15_16,
-      barca_16_17, barca_17_18, barca_18_19)
+                     barca_11_12, barca_12_13, barca_13_14, barca_14_15, barca_15_16,
+                     barca_16_17, barca_17_18, barca_18_19)
 
 all_seasons <- drop_na(all_seasons)
 all_seasons$goal_contributions <- all_seasons$goals + all_seasons$assists
 
-## top two goal contributors in each season
+## function data gathers all the opposition data from the la liga seasons and pitch activity data, such as shot location and body part
+
+get_opposition_data <- function(la_liga_season){
+  df <- get.opposingteam(la_liga_season) %>% filter(team.name == "Barcelona") %>% 
+    filter(player.id == 5503) %>% 
+    select(match_id, team.name, minute, type.name, possession, shot.outcome.name,shot.end_location, shot.type.name, shot.body_part.name, location.x, location.y,
+           shot.end_location.x, shot.end_location.y, shot.end_location.z, shot.statsbomb_xg,
+           OpposingTeam)
+}
+
+## applying the function and creating a dataframe of appearances per season. The appearance dataframe is used when looking at messi's goals per teams
+
+goal_opposition_06_07 <- get_opposition_data(la_liga_06_07)
+goal_opposition_06_07$season <- "06/07"
+appearances_06_07 <- goal_opposition_06_07 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_07_08 <- get_opposition_data(la_liga_07_08)
+goal_opposition_07_08$season <- "07/08"
+appearances_07_08 <- goal_opposition_07_08 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_08_09 <- get_opposition_data(la_liga_08_09)
+goal_opposition_08_09$season <- "08/09"
+appearances_08_09 <- goal_opposition_08_09 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_09_10 <- get_opposition_data(la_liga_09_10)
+goal_opposition_09_10$season <- "09/10"
+appearances_09_10 <- goal_opposition_09_10 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_10_11 <- get_opposition_data(la_liga_10_11)
+goal_opposition_10_11$season <- "10/11"
+appearances_10_11 <- goal_opposition_10_11 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_11_12 <- get_opposition_data(la_liga_11_12)
+goal_opposition_11_12$season <- "11/12"
+appearances_11_12 <- goal_opposition_11_12 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_12_13 <- get_opposition_data(la_liga_12_13)
+goal_opposition_12_13$season <- "12/13"
+appearances_12_13 <- goal_opposition_12_13 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_13_14 <- get_opposition_data(la_liga_13_14)
+goal_opposition_13_14$season <- "13/14"
+appearances_13_14 <- goal_opposition_13_14 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_14_15 <- get_opposition_data(la_liga_14_15)
+goal_opposition_14_15$season <- "14/15"
+appearances_14_15 <- goal_opposition_14_15 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_15_16 <- get_opposition_data(la_liga_15_16)
+goal_opposition_15_16$season <- "15/16"
+appearances_15_16 <- goal_opposition_15_16 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_16_17 <- get_opposition_data(la_liga_16_17)
+goal_opposition_16_17$season <- "16/17"
+appearances_16_17 <- goal_opposition_16_17 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_17_18 <- get_opposition_data(la_liga_17_18)
+goal_opposition_17_18$season <- "17/18"
+appearances_17_18 <- goal_opposition_17_18 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+goal_opposition_18_19 <- get_opposition_data(la_liga_18_19)
+goal_opposition_18_19$season <- "18/19"
+appearances_18_19 <- goal_opposition_18_19 %>% group_by(OpposingTeam) %>% summarise(appearances = n_distinct(match_id))
+
+## combining goal_opposition data to create one large opposition dataset #
+
+goal_opposition_data <- rbind(goal_opposition_06_07, goal_opposition_07_08, goal_opposition_08_09, goal_opposition_09_10, 
+                              goal_opposition_10_11, goal_opposition_11_12, goal_opposition_12_13, goal_opposition_13_14,
+                              goal_opposition_14_15, goal_opposition_15_16, goal_opposition_16_17, goal_opposition_17_18,
+                              goal_opposition_18_19)
+
+goal_opposition_data <- goal_opposition_data %>% filter(shot.outcome.name == "Goal")
+
+# creating a teams data frame to see how many times messi has played against each team in la liga up to 18/19
+
+teams <- rbind(appearances_06_07, appearances_07_08, appearances_08_09, appearances_09_10, appearances_10_11, appearances_11_12,
+               appearances_12_13, appearances_12_13, appearances_13_14, appearances_14_15, appearances_15_16, appearances_16_17,
+               appearances_17_18, appearances_18_19)
+
+# below removes the duplicate teams and then converts to dataframe
+
+teams <- unique(teams$OpposingTeam)
+teams <- data.frame(teams)
+colnames(teams)[1] <- "OpposingTeam"
+list_of_variables <- c("appearances_06_07","appearances_07_08","appearances_08_09","appearances_09_10","appearances_10_11","appearances_11_12",
+                    "appearances_12_13","appearances_13_14","appearances_14_15","appearances_15_16","appearances_16_17","appearances_17_18",
+                    "appearances_18_19")
+
+for (i in 1:length(list_of_variables)){
+  teams <- left_join(teams,get(list_of_variables[i]), by ="OpposingTeam")
+}
+
+messi_apperances <- rowSums(teams[,-1],na.rm = TRUE)
+messi_apperances <- data.frame(messi_apperances)
+teams <- unique(teams$OpposingTeam)
+teams <- data.frame(teams)
+colnames(teams)[1] <- "OpposingTeam"
+teams$messi_apperances <- messi_apperances
+
+## removing NAs, and creating a goal tally showing how many goals messi has scored and in how many appearances
+
+goal_opposition_data <- drop_na(goal_opposition_data)
+
+goal_tally <- goal_opposition_data %>% group_by(OpposingTeam) %>% tally()
+goal_tally <- rename(goal_tally, Goals = n)
+goal_tally <- left_join(goal_tally, teams, by = "OpposingTeam")
+
+## top two goal contributors in each season except 06/07 see note
 
 goal_contributors_06_07 <- all_seasons %>% filter(season == "06/07") %>% arrange(desc(goal_contributions))
-goal_contributors_06_07[2,] <- goal_contributors_06_07[3,] ## eto is actually second
+## Messi is third, eto is actually second but want to make comparison between Messi and top contributor
+goal_contributors_06_07[2,] <- goal_contributors_06_07[3,] 
 goal_contributors_06_07 <- goal_contributors_06_07[c(1,2),]
 
 goal_contributors_07_08 <- all_seasons %>% filter(season == "07/08") %>% arrange(desc(goal_contributions))
@@ -647,16 +420,31 @@ all_goal_contributors <- rbind(goal_contributors_06_07, goal_contributors_07_08,
                                goal_contributors_11_12, goal_contributors_12_13, goal_contributors_13_14, goal_contributors_14_15, goal_contributors_15_16,
                                goal_contributors_16_17, goal_contributors_17_18, goal_contributors_18_19)
 
+# creating a variable to make it easy for plotting messi and not messi data
 all_goal_contributors$messnotmessi <- ifelse(all_goal_contributors$player.id == 5503, 0, 1)
+# simplifying to familiar names else full names are too big
 easy_names <- c("Ronaldinho","Lionel Messi","Lionel Messi","Thierry Henry","Lionel Messi","Samuel Eto'o","Lionel Messi","Zlatan Ibrahimovic",
                 "Lionel Messi","David Villa","Lionel Messi","Cesc Fabregas","Lionel Messi","Cesc Fabregas","Lionel Messi","Alexis Sanchez","Lionel Messi",
                 "Neymar","Luis Suarez", "Lionel Messi","Lionel Messi","Luis Suarez","Lionel Messi","Luis Suarez","Lionel Messi","Luis Suarez")
 
 all_goal_contributors$easy_names <- easy_names
 
-# messi vs barcelona
+# messi summary data only
 
-# as a residual plot
+messi_seasons <- all_seasons %>% filter(player.id == 5503)
+messi_seasons <- messi_seasons %>% mutate(goals_per_90 = goals/nineties)
+messi_seasons$XG <- round(messi_seasons$XG,2)
+
+# a quick table showing messi's stats
+formattable(messi_seasons[,c(15,3,4,8,5,6,7)],
+            list(`percent_of_team_goals` = percent,
+                 `goals` = color_bar("#FA614B66"),
+                 `assists` = color_bar("#FA614B66")))
+
+
+##################### plots #####################
+
+# messi vs barcelona as a residual plot
 
 goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_contributions)) +
   geom_point(data = all_goal_contributors %>% filter(messnotmessi == 1),colour = "#DC143c",size = 2.6) + 
@@ -671,7 +459,7 @@ goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_con
   annotation_custom(img, xmin = 9, xmax = 13.5, ymin = 0, ymax = 13) +
   geom_text_repel(aes(label = ifelse(easy_names != "Lionel Messi",paste(easy_names," (",goals,",",assists,")"),"")), size = 3, family = 'Segoe UI Light', colour = 'Black', vjust = 1, hjust = 0.5) +
   geom_text_repel(aes(label = ifelse(easy_names == "Lionel Messi",paste("(",goals,",",assists,")"),"")), size = 3, family = 'Segoe UI Light', colour = 'Black', vjust = -2, hjust = 0) +
-  theme(text=element_text(size = 11, family = "Ebrima"),
+  theme(text=element_text(size = 11, family = "Ebrima", colour = '#333366'),
         plot.title = element_text(face = "bold"),
         plot.caption = element_text(hjust = .63, vjust = 5),
         panel.background = element_blank(),
@@ -680,22 +468,11 @@ goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_con
         legend.direction = "horizontal",
         legend.position = "bottom") 
 
-# messi summary data only
-
-messi_seasons <- all_seasons %>% filter(player.id == 5503)
-messi_seasons <- messi_seasons %>% mutate(goals_per_90 = goals/nineties)
-messi_seasons$XG <- round(messi_seasons$XG,2)
-
-formattable(messi_seasons[,c(15,3,4,8,5,6,7)],
-            list(`percent_of_team_goals` = percent,
-                 `goals` = color_bar("#FA614B66"),
-                 `assists` = color_bar("#FA614B66")))
-
-## scatter plot
+## scatter plot # Messi's goals per season and % of team goals
 
 goal_xg_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) + 
   geom_point(aes(col = goals, size = percent_of_team_goals)) + 
-  scale_size(range = c(.1,12)) +
+  scale_size(range = c(.1,15)) +
   geom_text_repel(aes(label = season), size = 3.5) + 
   scale_colour_gradient(low = "blue", high = "red") + 
   labs(title = "Messi: A supernatural finisher and a club dependent", 
@@ -706,9 +483,10 @@ goal_xg_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) +
        xlab("Goals") +
        ylab("Expected goals")+
   coord_cartesian(ylim = c(0,50), clip = "off") +
-  annotation_custom(img, xmin = 40, xmax = 52, ymin = -10, ymax = -36) +
-  theme(text=element_text(size = 12, family = "Segoe UI Light"),
-        plot.caption = element_text(hjust = .82, vjust = 8.5),
+  annotation_custom(img, xmin = 40, xmax = 52, ymin = 17, ymax = -36) +
+  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
+        plot.title = element_text(face = "bold"),
+        plot.caption = element_text(hjust = .7, vjust = 28),
         panel.background = element_blank(),
         axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
@@ -730,14 +508,15 @@ goals_per_90_plot <- ggplot(messi_seasons, aes(x = season, y = goals_per_90, fil
   labs(title = "Back of the net, time and again",
       subtitle = "Messi has been averaging nearly a goal a game, and in some cases more (Seasons 09/10, 11/12,\n14/15, 16/17, 18/19)",
        caption = "Data source: StatsBomb") +
-  theme(text=element_text(size = 10.5, family = "Ebrima"),
+  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
+        plot.title = element_text(face = "bold"),
         panel.background = element_blank())
 
 ## stacked barchart goals by type 
 
-a <- messi_seasons %>% pivot_longer(cols = left_footed_goals:penalty_goals)
+messi_pivot <- messi_seasons %>% pivot_longer(cols = left_footed_goals:penalty_goals)
 
-goal_by_type <- ggplot(a[order(a$value, decreasing = T),],
+goal_by_type <- ggplot(messi_pivot[order(messi_pivot$value, decreasing = T),],
        aes(x = season, y = value, fill = factor(
          name, levels = rev(c("left_footed_goals","right_footed_goals","headed_goals","other_goals","free_kick_goals","penalty_goals"))))) +
   geom_bar(stat = "identity")+
@@ -752,7 +531,7 @@ goal_by_type <- ggplot(a[order(a$value, decreasing = T),],
   coord_cartesian(ylim = c(0,50), clip = "off") +
   annotation_custom(img, xmin = 8.45, xmax = 12.5, ymin = 0, ymax = -12) +
   labs(title = "Dont let him get on his left foot!",
-       subtitle = "It comes as no surprise that most of Messi's goals come from his left foot, but we can also see an increasing\nnumber of free kicks making up his seasons tallies",
+       subtitle = "It comes as no surprise that most of Messi's goals come from his left foot, but we can also see an\nincreasing number of free kicks making up his seasons tallies",
        caption = "Data source") +
   theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
         plot.title = element_text(face = "bold"),
@@ -760,51 +539,6 @@ goal_by_type <- ggplot(a[order(a$value, decreasing = T),],
         panel.background = element_blank(),
         axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5))
-
-
-## favourite opposition - scored against
-
-goal_opposition_data <- rbind(goal_opposition_06_07, goal_opposition_07_08, goal_opposition_08_09, goal_opposition_09_10, 
-                              goal_opposition_10_11, goal_opposition_11_12, goal_opposition_12_13, goal_opposition_13_14,
-                              goal_opposition_14_15, goal_opposition_15_16, goal_opposition_16_17, goal_opposition_17_18,
-                              goal_opposition_18_19)
-
-goal_opposition_data <- goal_opposition_data %>% filter(shot.outcome.name == "Goal")
-
-teams <- rbind(appearances_06_07, appearances_07_08, appearances_08_09, appearances_09_10, appearances_10_11, appearances_11_12,
-      appearances_12_13, appearances_12_13, appearances_13_14, appearances_14_15, appearances_15_16, appearances_16_17,
-      appearances_17_18, appearances_18_19)
-
-teams <- unique(teams$OpposingTeam)
-teams <- data.frame(teams)
-colnames(teams)[1] <- "OpposingTeam"
-teams <- left_join(teams,appearances_06_07, by = "OpposingTeam")
-teams <- left_join(teams,appearances_07_08, by = "OpposingTeam")
-teams <- left_join(teams,appearances_08_09, by = "OpposingTeam")
-teams <- left_join(teams,appearances_09_10, by = "OpposingTeam")
-teams <- left_join(teams,appearances_10_11, by = "OpposingTeam")
-teams <- left_join(teams,appearances_11_12, by = "OpposingTeam")
-teams <- left_join(teams,appearances_12_13, by = "OpposingTeam")
-teams <- left_join(teams,appearances_13_14, by = "OpposingTeam")
-teams <- left_join(teams,appearances_14_15, by = "OpposingTeam")
-teams <- left_join(teams,appearances_15_16, by = "OpposingTeam")
-teams <- left_join(teams,appearances_16_17, by = "OpposingTeam")
-teams <- left_join(teams,appearances_17_18, by = "OpposingTeam")
-teams <- left_join(teams,appearances_18_19, by = "OpposingTeam")
-messi_apperances <- rowSums(teams[,-1],na.rm = TRUE)
-messi_apperances <- data.frame(messi_apperances)
-teams <- unique(teams$OpposingTeam)
-teams <- data.frame(teams)
-colnames(teams)[1] <- "OpposingTeam"
-teams$messi_apperances <- messi_apperances
-
-goal_opposition_data <- drop_na(goal_opposition_data)
-## increasing minute value by 1, to be in keeping with traditional football records
-goal_opposition_data$minute <- goal_opposition_data$minute+1
-
-goal_tally <- goal_opposition_data %>% group_by(OpposingTeam) %>% tally()
-goal_tally <- rename(goal_tally, Goals = n)
-goal_tally <- left_join(goal_tally, teams, by = "OpposingTeam")
 
 
 ## bubble plot of favourite opposition # minimum games 4
@@ -831,65 +565,26 @@ goals_against_teams <- ggplot(goal_tally %>% filter(messi_apperances >=4), aes(x
        axis.line.x = element_line(color = "black", size = 0.5),
        axis.line.y = element_line(color = "black", size = 0.5))
 
-## not to be published #####################
 
-## goals by the minute
-goals_by_the_minute <- goal_opposition_data %>% filter(minute<90) %>% group_by(minute) %>% tally()
-goals_by_the_minute <- rename(goals_by_the_minute, Goals = n)
-
-post_90_goals <- goal_opposition_data %>% filter(minute>89) %>% tally()
-post_90_goals <- data.frame(90,post_90_goals)
-colnames(post_90_goals)[1] <- "minute"
-
-temp_df <- data.frame(seq(min(goals_by_the_minute),90))
-colnames(temp_df)[1] <- "minute"
-
-goals_by_the_minute <- left_join(temp_df,goals_by_the_minute)
-goals_by_the_minute[90,2] <- post_90_goals[2]
-goals_cleaned <- ifelse(is.na(goals_by_the_minute$Goals),0,goals_by_the_minute$Goals)
-goals_by_the_minute$Goals <- goals_cleaned
-
-# plot
-ggplot(goals_by_the_minute ,aes(x = minute, y = Goals, fill = Goals)) +
-  geom_bar(stat = "identity") +
-  scale_fill_gradient(low = "blue", high = "red") +
-#  geom_vline(xintercept = 45, linetype = 'dashed', color = 'orange', size = 1.5) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_y_continuous(expand = c(0,0)) +
-  labs(title = "Messi's goals by the minute",
-       subtitle = "This is based on regulation time. Goals in the 90th, or after, are grouped together") +
-  geom_text_repel(aes(label = ifelse(Goals == 0 ,minute,'')), family = 'Segoe UI Light', colour = 'Black', nudge_y = 10) +
-  theme(text=element_text(size = 12, family = "Segoe UI Light"),
-        panel.background = element_blank(),
-        #plot.title = element_text(face = "bold"),
-        #plot.caption = element_text(hjust = 0.78, vjust = 9),
-        axis.line.x = element_line(color = "black", size = 0.5),
-        axis.line.y = element_line(color = "black", size = 0.5))
-
-view(goal_opposition_data %>% filter(minute > 89))
-
-##
-
-
-## goal map  ######
+## goal map  ###
 
 create_Pitch(background_colour = "white", grass_colour = "white", goal_colour = "white", line_colour = "dark blue", goaltype = "box", BasicFeatures = FALSE) +
   geom_segment(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y,
                       xend = shot.end_location.x, yend = shot.end_location.y, colour = shot.statsbomb_xg), size = 1.2) +
   scale_colour_gradient(low = "#0066Cc", high = "#FF0033") +
   geom_point(data = goal_opposition_data %>% filter(season == "18/19"), aes(x = location.x, y = location.y, fill = shot.body_part.name), colour ="black", shape = 21, size = 3.5) +
-  scale_fill_manual(values = c("white","#0000CD","green","#DC143C")) +
+  scale_fill_manual(values = c("#DC143C","#0000CD","green","White")) +
   labs(fill = "Goal method", colour ="Statsbomb XG") +
   coord_flip(xlim = c(75,125),ylim = c(-5,85))+
   scale_y_reverse() +
   guides(fill = guide_legend(order=2),
          colour = guide_colourbar(order=1))+
-  labs(title = "Messi does not care for XG",
-       subtitle = "Messi's 18/19 season goal map - a season",
+  labs(title = "Messi does not care for Expected Goal values",
+       subtitle = "Messi's 18/19 La Liga season goal map",
        caption = "Data source") +
   annotation_custom(img, xmin = 60, xmax = 90, ymin = -50, ymax = -75) +
-  theme(text=element_text(size = 12, family = "Segoe UI Light"),
-        plot.title = element_text(hjust = 0.05, vjust = -2, size = 26, face = "bold", colour = "#333399"),
+  theme(text=element_text(size = 12, family = "Ebrima"),
+        plot.title = element_text(hjust = 0.18, vjust = -2, size = 24, face = "bold", colour = "#333399"),
         plot.subtitle = element_text(hjust = 0.04, vjust = -6, size = 14, face = "bold", colour = "#990000"),
         plot.caption = element_text(hjust = 0.69, vjust = 15, size = 12),
         plot.margin = unit(c(0,0,1.5,0),"cm"),
@@ -940,10 +635,6 @@ p2 <- soccerPitch(120, 80, theme = "blank") +
   scale_fill_gradient(low = "white", high = "red") +
   guides(fill = F)
 
-soccerPitchFG(p2, 120, 80) +
-  coord_flip(xlim = c(75,125),
-             ylim = c(-5, 85))
-
 ## credit to the soccermatics team for the below. I was experiencing an issue with their heat map and fitting it to statsbomb data
 
 Bin_x <- 12
@@ -969,7 +660,7 @@ goals_per_game <- season_average/38
 odds_per_90 <- goals_per_game/90
 
 set.seed(2)
-predict1 <- list()
+goal_predictions <- list()
 
 golaso <- 0
 rand_n <- 0
@@ -984,22 +675,22 @@ for (j in 1:500){
       }
     }
   }
-  predict1[[j]] <- golaso
+  goal_predictions[[j]] <- golaso
 }
 
-df_predict1 <- data.frame(matrix(unlist(predict1), nrow = length(predict1), byrow = T))
-colnames(df_predict1)[1] <- "Goals"
+df_goal_predictions <- data.frame(matrix(unlist(goal_predictions), nrow = length(goal_predictions), byrow = T))
+colnames(df_goal_predictions)[1] <- "Goals"
 
 poisson_distribution <- c()
   
 for (i in 1:500){
-  poisson_distribution <- c(poisson_distribution,dpois(df_predict1$Goals[i],season_average))
+  poisson_distribution <- c(poisson_distribution,dpois(df_goal_predictions$Goals[i],season_average))
 }
 
-df_predict1$probs <- poisson_distribution
-transformer <- df_predict1$Goals[1]/df_predict1$probs[1]
+df_goal_predictions$probs <- poisson_distribution
+transformer <- df_goal_predictions$Goals[1]/df_goal_predictions$probs[1]
 
-goal_distribution <- ggplot(df_predict1, aes(x=Goals)) +
+goal_distribution <- ggplot(df_goal_predictions, aes(x=Goals)) +
   geom_bar(stat = "count", fill = "#CC3333") +
   geom_line(aes(y = probs*transformer), colour = "Blue", size = 1.5, linetype = "dashed", alpha = 0.7) +
   scale_y_continuous(expand = c(0,0), name = "Occurences", sec.axis = sec_axis(~. /transformer, name = "Probability %")) +
