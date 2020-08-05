@@ -468,11 +468,30 @@ goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_con
         legend.direction = "horizontal",
         legend.position = "bottom") 
 
+## barplot showing goals per 90 over seasons
+
+goals_per_90_plot <- ggplot(messi_seasons, aes(x = season, y = goals_per_90, fill = season)) + 
+  geom_bar(stat = "identity", show.legend = FALSE) +
+  scale_fill_manual(values = rep(c("#DC143C","#0000CD"), ceiling(length(messi_seasons$season)/2))[1:length(messi_seasons$season)]) +
+  scale_x_discrete(limits = rev(messi_seasons$season)) +
+  ylab("Goals per 90 minutes") +
+  xlab("Season") +
+  scale_y_continuous(expand = c(0,0)) +
+  coord_cartesian(ylim = c(-2,2), clip = "off") +
+  annotation_custom(img, xmin = 12, xmax = 14, ymin = 1, ymax = 1.5) +
+  coord_flip() +
+  labs(title = "Back of the net, time and again",
+       subtitle = "Messi has been averaging nearly a goal a game, and in some cases more (Seasons 09/10, 11/12,\n14/15, 16/17, 18/19)",
+       caption = "Data source: StatsBomb") +
+  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
+        plot.title = element_text(face = "bold"),
+        panel.background = element_blank())
+
 ## scatter plot # Messi's goals per season and % of team goals
 
 goal_xg_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) + 
   geom_point(aes(col = goals, size = percent_of_team_goals)) + 
-  scale_size(range = c(.1,15)) +
+  scale_size(range = c(.1,18)) +
   geom_text_repel(aes(label = season), size = 3.5) + 
   scale_colour_gradient(low = "blue", high = "red") + 
   labs(title = "Messi: A supernatural finisher and a club dependent", 
@@ -492,25 +511,6 @@ goal_xg_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) +
         axis.line.y = element_line(color = "black", size = 0.5),
         legend.direction = "horizontal",
         legend.position = "bottom") 
-
-## barplot showing goals per 90 over seasons
-
-goals_per_90_plot <- ggplot(messi_seasons, aes(x = season, y = goals_per_90, fill = season)) + 
-  geom_bar(stat = "identity", show.legend = FALSE) +
-  scale_fill_manual(values = rep(c("#DC143C","#0000CD"), ceiling(length(messi_seasons$season)/2))[1:length(messi_seasons$season)]) +
-  scale_x_discrete(limits = rev(messi_seasons$season)) +
-  ylab("Goals per 90 minutes") +
-  xlab("Season") +
-  scale_y_continuous(expand = c(0,0)) +
-  coord_cartesian(ylim = c(-2,2), clip = "off") +
-  annotation_custom(img, xmin = 12, xmax = 14, ymin = 1, ymax = 1.5) +
-  coord_flip() +
-  labs(title = "Back of the net, time and again",
-      subtitle = "Messi has been averaging nearly a goal a game, and in some cases more (Seasons 09/10, 11/12,\n14/15, 16/17, 18/19)",
-       caption = "Data source: StatsBomb") +
-  theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
-        plot.title = element_text(face = "bold"),
-        panel.background = element_blank())
 
 ## stacked barchart goals by type 
 
@@ -629,11 +629,6 @@ soccerPitchFG(p, 120, 80) +
         plot.caption = element_text(hjust = 0.48, vjust = 18, size = 12),
         plot.margin = unit(c(0,0,1.5,0),"cm"),
         legend.direction = "horizontal")
-
-p2 <- soccerPitch(120, 80, theme = "blank") +
-  stat_density_2d(data = goal_opposition_data, aes(x = location.x, y = location.y, fill = ..density..), geom = "raster", contour = FALSE) +
-  scale_fill_gradient(low = "white", high = "red") +
-  guides(fill = F)
 
 ## credit to the soccermatics team for the below. I was experiencing an issue with their heat map and fitting it to statsbomb data
 
