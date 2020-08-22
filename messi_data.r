@@ -175,20 +175,20 @@ minutes_18_19 <- minutes_18_19 %>%
 
 barca_get_data <- function(la_liga_season){
   barca_df <- la_liga_season %>% filter(team.name == "Barcelona") %>% group_by(player.id, player.name) %>% 
-        summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
-                  assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
-                  XG = sum(shot.statsbomb_xg, na.rm = TRUE),
-                  goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
-                  percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
-                                                   sum(la_liga_season %>% filter(team.name == "Barcelona") %>% 
-                                                         summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
-                  shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
-                  left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-                  right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
-                  headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
-                  other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
-                  free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
-                  penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
+    summarise(chances_created = sum(pass.shot_assist == 'TRUE', na.rm = TRUE), 
+              assists = sum(pass.goal_assist == 'TRUE', na.rm = TRUE),
+              XG = sum(shot.statsbomb_xg, na.rm = TRUE),
+              goals = sum(shot.outcome.name == 'Goal', na.rm = TRUE),
+              percent_of_team_goals = round((sum(shot.outcome.name == "Goal", na.rm = TRUE) / 
+                                               sum(la_liga_season %>% filter(team.name == "Barcelona") %>% 
+                                                     summarise(sum(shot.outcome.name == "Goal", na.rm = TRUE)))),2),
+              shots_on_target = (sum(shot.outcome.name == 'Goal', na.rm = TRUE) + sum(shot.outcome.name == 'Saved', na.rm = TRUE) + sum(shot.outcome.name == 'Saved to post', na.rm = TRUE)),
+              left_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Left Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
+              right_footed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Right Foot' & shot.type.name == 'Open Play', na.rm = TRUE),
+              headed_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Head' & shot.type.name == 'Open Play', na.rm = TRUE),
+              other_goals = sum(shot.outcome.name == 'Goal' & shot.body_part.name == 'Other' & shot.type.name == 'Open Play', na.rm = TRUE),
+              free_kick_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Free Kick', na.rm = TRUE),
+              penalty_goals = sum(shot.outcome.name == 'Goal' & shot.type.name == 'Penalty', na.rm = TRUE))
 }
 # the function is then applied to all previous la liga seasons
 
@@ -197,62 +197,62 @@ barca_06_07$season <- "06/07"
 barca_06_07 <- left_join(barca_06_07, minutes_06_07)
 barca_06_07 <- barca_06_07 %>% mutate(nineties = minutes/90)
 
-barca_07_08 <- barca_get_data(barca_07_08,la_liga_07_08)
+barca_07_08 <- barca_get_data(la_liga_07_08)
 barca_07_08$season <- "07/08"
 barca_07_08 <- left_join(barca_07_08, minutes_07_08)
 barca_07_08 <- barca_07_08 %>% mutate(nineties = minutes/90)
 
-barca_08_09 <- barca_get_data(barca_08_09,la_liga_08_09)
+barca_08_09 <- barca_get_data(la_liga_08_09)
 barca_08_09$season <- "08/09"
 barca_08_09 <- left_join(barca_08_09, minutes_08_09)
 barca_08_09 <- barca_08_09 %>% mutate(nineties = minutes/90)
 
-barca_09_10 <- barca_get_data(barca_09_10,la_liga_09_10)
+barca_09_10 <- barca_get_data(la_liga_09_10)
 barca_09_10$season <- "09/10"
 barca_09_10 <- left_join(barca_09_10, minutes_09_10)
 barca_09_10 <- barca_09_10 %>% mutate(nineties = minutes/90)
 
-barca_10_11 <- barca_get_data(barca_10_11,la_liga_10_11)
+barca_10_11 <- barca_get_data(la_liga_10_11)
 barca_10_11$season <- "10/11"
 barca_10_11 <- left_join(barca_10_11, minutes_10_11)
 barca_10_11 <- barca_10_11 %>% mutate(nineties = minutes/90)
 
-barca_11_12 <- barca_get_data(barca_11_12,la_liga_11_12)
+barca_11_12 <- barca_get_data(la_liga_11_12)
 barca_11_12$season <- "11/12"
 barca_11_12 <- left_join(barca_11_12, minutes_11_12)
 barca_11_12 <- barca_11_12 %>% mutate(nineties = minutes/90)
 
-barca_12_13 <- barca_get_data(barca_12_13,la_liga_12_13)
+barca_12_13 <- barca_get_data(la_liga_12_13)
 barca_12_13$season <- "12/13"
 barca_12_13 <- left_join(barca_12_13, minutes_12_13)
 barca_12_13 <- barca_12_13 %>% mutate(nineties = minutes/90)
 
-barca_13_14 <- barca_get_data(barca_13_14,la_liga_13_14)
+barca_13_14 <- barca_get_data(la_liga_13_14)
 barca_13_14$season <- "13/14"
 barca_13_14 <- left_join(barca_13_14, minutes_13_14)
 barca_13_14 <- barca_13_14 %>% mutate(nineties = minutes/90)
 
-barca_14_15 <- barca_get_data(barca_14_15,la_liga_14_15)
+barca_14_15 <- barca_get_data(la_liga_14_15)
 barca_14_15$season <- "14/15"
 barca_14_15 <- left_join(barca_14_15, minutes_14_15)
 barca_14_15 <- barca_14_15 %>% mutate(nineties = minutes/90)
 
-barca_15_16 <- barca_get_data(barca_15_16,la_liga_15_16)
+barca_15_16 <- barca_get_data(la_liga_15_16)
 barca_15_16$season <- "15/16"
 barca_15_16 <- left_join(barca_15_16, minutes_15_16)
 barca_15_16 <- barca_15_16 %>% mutate(nineties = minutes/90)
 
-barca_16_17 <- barca_get_data(barca_16_17,la_liga_16_17)
+barca_16_17 <- barca_get_data(la_liga_16_17)
 barca_16_17$season <- "16/17"
 barca_16_17 <- left_join(barca_16_17, minutes_16_17)
 barca_16_17 <- barca_16_17 %>% mutate(nineties = minutes/90)
 
-barca_17_18 <- barca_get_data(barca_17_18,la_liga_17_18)
+barca_17_18 <- barca_get_data(la_liga_17_18)
 barca_17_18$season <- "17/18"
 barca_17_18 <- left_join(barca_17_18, minutes_17_18)
 barca_17_18 <- barca_17_18 %>% mutate(nineties = minutes/90)
 
-barca_18_19 <- barca_get_data(barca_18_19,la_liga_18_19)
+barca_18_19 <- barca_get_data(la_liga_18_19)
 barca_18_19$season <- "18/19"
 barca_18_19 <- left_join(barca_18_19, minutes_18_19)
 barca_18_19 <- barca_18_19 %>% mutate(nineties = minutes/90)
@@ -453,7 +453,7 @@ goal_contribs_plot <- ggplot(all_goal_contributors, aes(x = season, y = goal_con
   xlab("Season") +
   ylab("Goal contributions") +
   labs(title = "The rise and continued reliability on Messi",
-       subtitle = "In 11 out of 13 full seasons Messi has been Barca's chief provider in goal contributions (goals & assists).\nIn the 11/12 season had nearly 50 goal contributions more than the next player",
+       subtitle = "In 11 out of 13 full seasons Messi has been Barca's chief provider in goal contributions (goals & assists).\nIn the 11/12 season Messi had nearly 50 goal contributions more than the next player",
        caption = "Data source") +
   coord_cartesian(ylim = c(15,65), clip = "off") +
   annotation_custom(img, xmin = 9, xmax = 13.5, ymin = 0, ymax = 13) +
@@ -505,7 +505,7 @@ goal_xg_scatterplot <- ggplot(messi_seasons, aes(x = goals, y = XG)) +
   annotation_custom(img, xmin = 40, xmax = 52, ymin = 17, ymax = -36) +
   theme(text=element_text(size = 12, family = "Ebrima", colour = '#333366'),
         plot.title = element_text(face = "bold"),
-        plot.caption = element_text(hjust = .7, vjust = 28),
+        plot.caption = element_text(hjust = .7, vjust = 32),
         panel.background = element_blank(),
         axis.line.x = element_line(color = "black", size = 0.5),
         axis.line.y = element_line(color = "black", size = 0.5),
